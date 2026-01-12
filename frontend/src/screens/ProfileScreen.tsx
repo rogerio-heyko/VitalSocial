@@ -49,8 +49,8 @@ export default function ProfileScreen() {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
+        <View className="flex-1 bg-gray-100 px-5 pt-12">
+            <View className="items-center mb-10 mt-10">
                 <View style={styles.avatarPlaceholder}>
                     <Text style={styles.avatarText}>{user?.nome?.charAt(0)}</Text>
                 </View>
@@ -75,7 +75,7 @@ export default function ProfileScreen() {
                     placeholder="Deixe em branco para manter"
                 />
 
-                <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={loading}>
+                <TouchableOpacity className="bg-green-500 p-4 rounded-lg items-center mt-8" onPress={handleSave} disabled={loading}>
                     {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveButtonText}>Salvar Alterações</Text>}
                 </TouchableOpacity>
 
@@ -100,8 +100,6 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f5f5f5', padding: 20 },
-    header: { alignItems: 'center', marginBottom: 40, marginTop: 40 },
     avatarPlaceholder: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
     avatarText: { color: '#fff', fontSize: 32, fontWeight: 'bold' },
     email: { fontSize: 16, color: '#666' },

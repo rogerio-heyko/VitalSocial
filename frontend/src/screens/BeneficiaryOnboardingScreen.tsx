@@ -49,6 +49,33 @@ export default function BeneficiaryOnboardingScreen() {
         termosAceitos: false
     });
 
+    const [projects, setProjects] = useState<{ id: string; nome: string; instituicao?: string }[]>([]);
+
+    React.useEffect(() => {
+        async function loadProjects() {
+            try {
+                const response = await api.get('/projects');
+                setProjects(response.data);
+            } catch (error) {
+                console.log('Erro ao carregar projetos', error);
+            }
+        }
+        loadProjects();
+    }, []);
+
+    const toggleProjectSelection = (projectName: string) => {
+        const currentSelection = formData.projetoInteresse ? formData.projetoInteresse.split(', ').filter(p => p) : [];
+        let newSelection;
+
+        if (currentSelection.includes(projectName)) {
+            newSelection = currentSelection.filter(p => p !== projectName);
+        } else {
+            newSelection = [...currentSelection, projectName];
+        }
+
+        updateForm('projetoInteresse', newSelection.join(', '));
+    };
+
     const updateForm = (key: string, value: any) => {
         setFormData(prev => ({ ...prev, [key]: value }));
     };
@@ -300,13 +327,30 @@ export default function BeneficiaryOnboardingScreen() {
         <View>
             <Text style={styles.sectionTitle}>5. Finalização</Text>
 
-            <Text style={styles.label}>Qual projeto deseja participar?</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Ex: Tribo de Judá, Karatê..."
-                value={formData.projetoInteresse}
-                onChangeText={(t) => updateForm('projetoInteresse', t)}
-            />
+            <Text style={styles.label}>Qual projeto deseja participar? (Selecione um ou mais)</Text>
+
+            {projects.length === 0 ? (
+                <Text style={{ color: '#888', fontStyle: 'italic', marginBottom: 15 }}>Carregando projetos ou nenhum disponível...</Text>
+            ) : (
+                <View style={styles.checkboxContainer}>
+                    {projects.map(proj => {
+                        const isSelected = formData.projetoInteresse.split(', ').includes(proj.nome);
+                        return (
+                            <TouchableOpacity
+                                key={proj.id}
+                                style={styles.checkboxItem}
+                                onPress={() => toggleProjectSelection(proj.nome)}
+                            >
+                                <View style={[styles.checkboxBox, isSelected && styles.checkboxBoxSelected]} />
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.checkboxLabel}>{proj.nome}</Text>
+                                    {proj.instituicao && <Text style={{ fontSize: 12, color: '#666' }}>{proj.instituicao}</Text>}
+                                </View>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
+            )}
 
             <TouchableOpacity
                 style={styles.termsButton}

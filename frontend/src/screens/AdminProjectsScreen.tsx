@@ -6,6 +6,7 @@ interface Projeto {
     id: string;
     nome: string;
     descricao?: string;
+    instituicao?: string;
     chavePix?: string;
     walletBtc?: string;
     walletEth?: string;
@@ -20,6 +21,7 @@ export default function AdminProjectsScreen() {
     // Form States
     const [nome, setNome] = useState('');
     const [descricao, setDescricao] = useState('');
+    const [instituicao, setInstituicao] = useState('');
     const [chavePix, setChavePix] = useState('');
     const [walletBtc, setWalletBtc] = useState('');
     const [walletEth, setWalletEth] = useState('');
@@ -45,6 +47,7 @@ export default function AdminProjectsScreen() {
             setEditingProject(projeto);
             setNome(projeto.nome);
             setDescricao(projeto.descricao || '');
+            setInstituicao(projeto.instituicao || '');
             setChavePix(projeto.chavePix || '');
             setWalletBtc(projeto.walletBtc || '');
             setWalletEth(projeto.walletEth || '');
@@ -53,6 +56,7 @@ export default function AdminProjectsScreen() {
             setEditingProject(null);
             setNome('');
             setDescricao('');
+            setInstituicao('');
             setChavePix('');
             setWalletBtc('');
             setWalletEth('');
@@ -63,7 +67,7 @@ export default function AdminProjectsScreen() {
 
     async function handleSave() {
         try {
-            const data = { nome, descricao, chavePix, walletBtc, walletEth, walletUsdt };
+            const data = { nome, descricao, instituicao, chavePix, walletBtc, walletEth, walletUsdt };
             if (editingProject) {
                 await api.put(`/admin/projects/${editingProject.id}`, data);
                 Alert.alert('Sucesso', 'Projeto atualizado!');
@@ -100,6 +104,7 @@ export default function AdminProjectsScreen() {
         <View style={styles.card}>
             <View style={{ flex: 1 }}>
                 <Text style={styles.projectName}>{item.nome}</Text>
+                {item.instituicao && <Text style={{ fontSize: 12, color: '#4a90e2', fontWeight: 'bold' }}>{item.instituicao}</Text>}
                 <Text numberOfLines={1} style={styles.projectDesc}>{item.descricao}</Text>
             </View>
             <View style={styles.actions}>
@@ -114,7 +119,7 @@ export default function AdminProjectsScreen() {
     );
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1 px-5 pt-12 bg-gray-100">
             <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
                 <Text style={styles.addButtonText}>+ Novo Projeto</Text>
             </TouchableOpacity>
@@ -135,19 +140,22 @@ export default function AdminProjectsScreen() {
                         <Text style={styles.label}>Descrição</Text>
                         <TextInput style={styles.input} value={descricao} onChangeText={setDescricao} placeholder="Breve descrição..." />
 
+                        <Text style={styles.label}>Instituição Responsável</Text>
+                        <TextInput style={styles.input} value={instituicao} onChangeText={setInstituicao} placeholder="Ex: Instituto Farol" />
+
                         <Text style={styles.sectionTitle}>Chaves de Doação</Text>
 
                         <Text style={styles.label}>Chave PIX</Text>
                         <TextInput style={styles.input} value={chavePix} onChangeText={setChavePix} placeholder="CPF, Email, Aleatória..." />
 
-                        <Text style={styles.label}>Wallet Bitcoin (BTC)</Text>
+                        <Text style={styles.label}>Wallet Bitcoin (Rede BTC)</Text>
                         <TextInput style={styles.input} value={walletBtc} onChangeText={setWalletBtc} placeholder="Endereço BTC" />
 
-                        <Text style={styles.label}>Wallet Ethereum (ETH)</Text>
+                        <Text style={styles.label}>Wallet Ethereum (Rede ETH)</Text>
                         <TextInput style={styles.input} value={walletEth} onChangeText={setWalletEth} placeholder="Endereço ETH" />
 
-                        <Text style={styles.label}>Wallet USDT (TRC20/ERC20)</Text>
-                        <TextInput style={styles.input} value={walletUsdt} onChangeText={setWalletUsdt} placeholder="Endereço USDT" />
+                        <Text style={styles.label}>Wallet USDT (Rede Polygon)</Text>
+                        <TextInput style={styles.input} value={walletUsdt} onChangeText={setWalletUsdt} placeholder="Endereço USDT (Polygon)" />
 
                         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                             <Text style={styles.saveButtonText}>Salvar</Text>
@@ -164,7 +172,6 @@ export default function AdminProjectsScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
     addButton: { backgroundColor: '#4a90e2', padding: 15, borderRadius: 8, alignItems: 'center', marginBottom: 20 },
     addButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
     card: { backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 10, flexDirection: 'row', alignItems: 'center' },

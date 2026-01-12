@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import { prisma } from '../server';
-import { AppError } from '../errors/AppError';
+import { AppError } from '../utils/AppError';
 
 class ProjectController {
 
     // Criar Projeto (Admin)
     async create(req: Request, res: Response) {
-        const { nome, descricao, chavePix, walletBtc, walletEth, walletUsdt, responsavelId } = req.body;
+        const { nome, descricao, instituicao, chavePix, walletBtc, walletEth, walletUsdt, responsavelId } = req.body;
 
         if (!nome) {
             throw new AppError('O nome do projeto é obrigatório.');
@@ -16,6 +16,7 @@ class ProjectController {
             data: {
                 nome,
                 descricao,
+                instituicao,
                 chavePix,
                 walletBtc,
                 walletEth,
@@ -43,6 +44,7 @@ class ProjectController {
                 id: true,
                 nome: true,
                 descricao: true,
+                instituicao: true,
                 chavePix: true,
                 walletBtc: true,
                 walletEth: true,

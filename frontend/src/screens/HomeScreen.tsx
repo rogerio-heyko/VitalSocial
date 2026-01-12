@@ -59,10 +59,11 @@ export default function HomeScreen({ navigation }: any) {
 
     return (
         <ScrollView
-            style={styles.container}
+            className="flex-1 bg-gray-100"
+            contentContainerStyle={{ paddingBottom: 20 }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />}
         >
-            <View style={styles.header}>
+            <View className="pt-16 px-5 pb-5 bg-white shadow-sm">
                 <View style={styles.headerTop}>
                     <View>
                         <Text style={styles.greeting}>Olá, {user?.nome?.split(' ')[0]}</Text>
@@ -127,8 +128,6 @@ export default function HomeScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f5f5f5' },
-    header: { padding: 20, paddingTop: 60, backgroundColor: '#fff', paddingBottom: 20 },
     headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     profileIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center' },
     profileInitials: { fontSize: 18, fontWeight: 'bold', color: '#333' },

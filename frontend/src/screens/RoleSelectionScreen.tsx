@@ -5,15 +5,18 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation';
 import { useAuth } from '../contexts/AuthContext';
 
+import { useLanguage } from '../contexts/LanguageContext';
+
 export default function RoleSelectionScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { signOut } = useAuth();
+    const { t } = useLanguage();
 
     return (
         <View style={styles.container}>
-            <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
+            <Image source={require('../../assets/logo.jpg')} style={styles.logo} resizeMode="contain" />
 
-            <Text style={styles.title}>Bem-vindo ao Teleios!</Text>
+            <Text style={styles.title}>{t('welcomeTitle')}</Text>
             <Text style={styles.subtitle}>Para continuar, escolha como você deseja participar da nossa comunidade:</Text>
 
             <TouchableOpacity

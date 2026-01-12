@@ -152,13 +152,17 @@ export default function DonationScreen() {
                 <View style={styles.content}>
                     <Text style={styles.label}>Selecione a Moeda</Text>
                     <View style={styles.coinSelector}>
-                        {['BTC', 'ETH', 'USDT'].map(coin => (
+                        {[
+                            { code: 'BTC', label: 'BTC (Bitcoin)' },
+                            { code: 'ETH', label: 'ETH (Ethereum)' },
+                            { code: 'USDT', label: 'USDT (Polygon)' }
+                        ].map(coin => (
                             <TouchableOpacity
-                                key={coin}
-                                style={[styles.coinButton, selectedCoin === coin && styles.activeCoin]}
-                                onPress={() => setSelectedCoin(coin)}
+                                key={coin.code}
+                                style={[styles.coinButton, selectedCoin === coin.code && styles.activeCoin]}
+                                onPress={() => setSelectedCoin(coin.code)}
                             >
-                                <Text style={[styles.coinText, selectedCoin === coin && styles.activeCoinText]}>{coin}</Text>
+                                <Text style={[styles.coinText, selectedCoin === coin.code && styles.activeCoinText]}>{coin.label}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>

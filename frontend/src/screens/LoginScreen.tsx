@@ -1,26 +1,53 @@
+import React, { useState } from 'react';
+import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../theme/colors';
-
-// ... (imports remain the same)
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function LoginScreen({ navigation }: any) {
-    // ... (logic remains the same)
+    const { t } = useLanguage();
+    const { signIn } = useAuth();
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    async function handleLogin() {
+        if (loading) return;
+
+        if (!email || !password) {
+            Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await signIn(email, password);
+        } catch (error) {
+            console.error(error);
+            Alert.alert('Erro', 'Falha no login. Verifique suas credenciais.');
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <View style={styles.container}>
-            <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
-            <Text style={styles.tagline}>Conectando corações, construindo futuros</Text>
+            <Image source={require('../../assets/logo.jpg')} style={styles.logo} resizeMode="contain" />
+            <Text style={styles.tagline}>{t('tagline')}</Text>
 
             <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder={t('email')}
                 placeholderTextColor={colors.textLight}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
+                keyboardType="email-address"
             />
             <TextInput
                 style={styles.input}
-                placeholder="Senha"
+                placeholder={t('password')}
                 placeholderTextColor={colors.textLight}
                 value={password}
                 onChangeText={setPassword}
@@ -28,15 +55,15 @@ export default function LoginScreen({ navigation }: any) {
             />
 
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
-                {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.buttonText}>Entrar</Text>}
+                {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.buttonText}>{t('login')}</Text>}
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotButton}>
-                <Text style={styles.forgotButtonText}>Esqueci minha senha</Text>
+                <Text style={styles.forgotButtonText}>{t('forgotPassword')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate('Register')}>
-                <Text style={styles.registerButtonText}>Criar Conta</Text>
+                <Text style={styles.registerButtonText}>{t('register')}</Text>
             </TouchableOpacity>
         </View>
     );

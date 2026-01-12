@@ -30,6 +30,8 @@ services:
     depends_on:
       - postgres
     command: npm run dev
+    networks:
+      - vital_net
 
   frontend:
     image: node:20

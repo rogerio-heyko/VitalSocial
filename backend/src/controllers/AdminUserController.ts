@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../server';
 import { TipoUsuario } from '@prisma/client';
-import { AppError } from '../errors/AppError';
+import { AppError } from '../utils/AppError';
 
 class AdminUserController {
 

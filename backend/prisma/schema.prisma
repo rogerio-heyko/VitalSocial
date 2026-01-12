@@ -172,6 +172,7 @@ model Projeto {
   id          String   @id @default(uuid())
   nome        String
   descricao   String?
+  instituicao String? // Nome da instituição que gerencia o projeto
   
   // Chaves de Doação Específicas
   chavePix    String?
