@@ -1,0 +1,16 @@
+node_modules
+.env
+*.log
+.DS_Store
+dist
+build
+coverage
+.expo
+.vscode
+.idea
+*.jks
+*.keystore
+backend/dist
+backend/node_modules
+frontend/node_modules
+frontend/.expo

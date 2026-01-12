@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum TipoUsuario {
+  DOADOR
+  BENEFICIARIO
+  STAFF
+  ADMIN
+}
+
+enum TipoAtividade {
+  AULA
+  CURSO
+  EVENTO
+}
+
+model Usuario {
+  id           String      @id @default(uuid())
+  nome         String
+  email        String      @unique
+  senhaHash    String
+  tipo         TipoUsuario
+  menorIdade   Boolean     @default(false)
+  dataCadastro DateTime    @default(now())
+
+  // Relations
+  perfilDoador       PerfilDoador?
+  perfilBeneficiario PerfilBeneficiario?
+  
+  // Responsáveis - Self Relation (Many-to-Many via implicit or explicit table, here explicit for clarity if needed, or simple self relation)
+  // Simplifying for now: A user can validly be a dependent of others
+  responsaveis       Responsavel[] @relation("Dependentes")
+  dependentes        Responsavel[] @relation("Responsaveis")
+
+  inscricoes         Inscricao[]
+  atividadesMinistradas Atividade[] // Professor
+  leiturasConcluidas LeituraConcluida[]
+  doacoes            Doacao[]
+  postsForum         ForumPost[]
+}
+
+model Responsavel {
+  id              String   @id @default(uuid())
+  usuarioId       String
+  responsavelId   String
+  
+  usuario         Usuario  @relation("Dependentes", fields: [usuarioId], references: [id])
+  responsavel     Usuario  @relation("Responsaveis", fields: [responsavelId], references: [id])
+
+  @@unique([usuarioId, responsavelId])
+}
+
+model PerfilDoador {
+  id            String  @id @default(uuid())
+  usuarioId     String  @unique
+  usuario       Usuario @relation(fields: [usuarioId], references: [id])
+  valorMensal   Decimal
+  diaVencimento Int
+}
+
+model PerfilBeneficiario {
+  id                    String  @id @default(uuid())
+  usuarioId             String  @unique
+  usuario               Usuario @relation(fields: [usuarioId], references: [id])
+  dadosQuestionarioSocial Json
+}
+
+model Atividade {
+  id                   String        @id @default(uuid())
+  titulo               String
+  tipo                 TipoAtividade
+  dataHora             DateTime
+  professorResponsavelId String
+  professor            Usuario       @relation(fields: [professorResponsavelId], references: [id])
+  
+  inscricoes           Inscricao[]
+  postsForum           ForumPost[]
+}
+
+model Inscricao {
+  id          String    @id @default(uuid())
+  alunoId     String
+  atividadeId String
+  dataInscricao DateTime @default(now())
+
+  aluno       Usuario   @relation(fields: [alunoId], references: [id])
+  atividade   Atividade @relation(fields: [atividadeId], references: [id])
+  
+  presencas   Presenca[]
+}
+
+model Presenca {
+  id          String   @id @default(uuid())
+  inscricaoId String
+  inscricao   Inscricao @relation(fields: [inscricaoId], references: [id])
+  dataAula    DateTime
+  presente    Boolean  @default(false)
+  criadoEm    DateTime @default(now())
+}
+
+model LeituraBiblica {
+  id              String   @id @default(uuid())
+  trechosBiblicos String
+  reflexao        String?
+  dataLeitura     DateTime @default(now())
+  criadoEm        DateTime @default(now())
+  leiturasConcluidas LeituraConcluida[]
+}
+
+model LeituraConcluida {
+  id              String          @id @default(uuid())
+  usuarioId       String
+  usuario         Usuario         @relation(fields: [usuarioId], references: [id])
+  leituraBiblicaId String
+  leituraBiblica  LeituraBiblica  @relation(fields: [leituraBiblicaId], references: [id])
+  concluidoEm     DateTime        @default(now())
+
+  @@unique([usuarioId, leituraBiblicaId])
+}
+
+model Configuracao {
+  chave       String   @id @unique
+  valor       String
+  descricao   String?
+  atualizadoEm DateTime @default(now())
+}
+
+model Doacao {
+  id          String   @id @default(uuid())
+  usuarioId   String?
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id])
+  valor       Decimal
+  metodo      String   // PIX, CRIPTO
+  moeda       String   // BRL, ETH, BTC, USDT
+  status      String   @default("PENDENTE") // PENDENTE, CONFIRMADO
+  txId        String?  // Hash da transação ou ID Pix
+  criadoEm    DateTime @default(now())
+}
+
+model ForumPost {
+  id          String    @id @default(uuid())
+  conteudo    String
+  dataPostagem DateTime @default(now())
+  
+  usuarioId   String
+  atividadeId String
+
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id])
+  atividade   Atividade @relation(fields: [atividadeId], references: [id])
+}
