@@ -58,20 +58,36 @@ export class ProfileController {
 
     async atualizarBeneficiario(req: Request, res: Response) {
         const { id } = req.user;
-        const { dadosQuestionarioSocial } = req.body;
+        const {
+            dadosQuestionarioSocial,
+            rendaFamiliar,
+            numeroDependentes,
+            possuiDeficiencia
+        } = req.body;
 
         if (!dadosQuestionarioSocial) {
             throw new AppError('Dados do questionário social são obrigatórios.');
         }
 
+        // Tenta extrair valores do JSON se não vierem explícitos (fallback)
+        const renda = rendaFamiliar ?? dadosQuestionarioSocial.rendaFamiliar;
+        const dependentes = numeroDependentes ?? dadosQuestionarioSocial.numeroDependentes;
+        const deficiencia = possuiDeficiencia ?? dadosQuestionarioSocial.possuiDeficiencia;
+
         const perfil = await prisma.perfilBeneficiario.upsert({
             where: { usuarioId: id },
             update: {
                 dadosQuestionarioSocial,
+                rendaFamiliar: renda ? parseFloat(renda) : null,
+                numeroDependentes: dependentes ? parseInt(dependentes) : null,
+                possuiDeficiencia: !!deficiencia
             },
             create: {
                 usuarioId: id,
                 dadosQuestionarioSocial,
+                rendaFamiliar: renda ? parseFloat(renda) : null,
+                numeroDependentes: dependentes ? parseInt(dependentes) : null,
+                possuiDeficiencia: !!deficiencia
             },
         });
 

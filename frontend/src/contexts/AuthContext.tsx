@@ -15,6 +15,7 @@ interface AuthContextData {
     signIn: (email: string, senha: string) => Promise<void>;
     signOut: () => Promise<void>;
     signUp: (nome: string, email: string, senha: string) => Promise<void>;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -62,8 +63,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
     }
 
+    async function refreshUser() {
+        try {
+            const response = await api.get('/perfil/me');
+            const updatedUser = response.data;
+            await SecureStore.setItemAsync('teleios_user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
+        } catch (error) {
+            console.error('Erro ao atualizar usuário:', error);
+        }
+    }
+
     return (
-        <AuthContext.Provider value={{ user, loading, signIn, signOut, signUp }}>
+        <AuthContext.Provider value={{ user, loading, signIn, signOut, signUp, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );

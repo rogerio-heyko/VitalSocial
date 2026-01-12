@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, FlatList } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import * as Clipboard from 'expo-clipboard';
 import api from '../services/api';
 
+interface Project {
+    id: string;
+    nome: string;
+    descricao?: string;
+}
+
 export default function DonationScreen() {
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+    const [pickingProject, setPickingProject] = useState(false);
+
     const [valor, setValor] = useState('');
     const [metodo, setMetodo] = useState<'PIX' | 'CRIPTO'>('PIX');
     const [loading, setLoading] = useState(false);
@@ -18,14 +28,34 @@ export default function DonationScreen() {
     const [selectedCoin, setSelectedCoin] = useState('BTC');
 
     useEffect(() => {
-        if (metodo === 'CRIPTO' && !wallets) {
+        loadProjects();
+    }, []);
+
+    useEffect(() => {
+        // Reset states when project changes
+        setPixPayload('');
+        setWallets(null);
+        if (metodo === 'CRIPTO') {
             fetchWallets();
         }
-    }, [metodo]);
+    }, [selectedProject, metodo]);
+
+    async function loadProjects() {
+        try {
+            const res = await api.get('/projetos');
+            setProjects(res.data);
+            if (res.data.length > 0) {
+                setSelectedProject(res.data[0]); // Default to first
+            }
+        } catch (error) {
+            console.error('Falha ao carregar projetos', error);
+        }
+    }
 
     const fetchWallets = async () => {
         try {
-            const res = await api.get('/doacoes/crypto');
+            const params = selectedProject ? { projetoId: selectedProject.id } : {};
+            const res = await api.get('/doacoes/crypto', { params });
             setWallets(res.data);
         } catch (error) {
             Alert.alert('Erro', 'Falha ao carregar carteiras');
@@ -36,7 +66,11 @@ export default function DonationScreen() {
         if (!valor) return Alert.alert('Atenção', 'Digite um valor');
         setLoading(true);
         try {
-            const res = await api.post('/doacoes/pix', { valor: parseFloat(valor.replace(',', '.')) });
+            const body = {
+                valor: parseFloat(valor.replace(',', '.')),
+                projetoId: selectedProject?.id
+            };
+            const res = await api.post('/doacoes/pix', body);
             setPixPayload(res.data.payloadPix);
             setQrInstructions(res.data.qrCodeInstructions);
         } catch (error) {
@@ -51,10 +85,29 @@ export default function DonationScreen() {
         Alert.alert('Copiado!', 'Código copiado para a área de transferência.');
     };
 
+    const renderProjectItem = ({ item }: { item: Project }) => (
+        <TouchableOpacity
+            style={styles.modalItem}
+            onPress={() => {
+                setSelectedProject(item);
+                setPickingProject(false);
+            }}
+        >
+            <Text style={styles.modalItemText}>{item.nome}</Text>
+        </TouchableOpacity>
+    );
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <Text style={styles.title}>Faça sua Doação</Text>
-            <Text style={styles.subtitle}>Escolha como deseja contribuir</Text>
+
+            <Text style={styles.label}>Destinar para:</Text>
+            <TouchableOpacity style={styles.pickerButton} onPress={() => setPickingProject(true)}>
+                <Text style={styles.pickerText}>
+                    {selectedProject ? selectedProject.nome : 'Selecione um Projeto...'}
+                </Text>
+                <Text>▼</Text>
+            </TouchableOpacity>
 
             <View style={styles.tabs}>
                 <TouchableOpacity style={[styles.tab, metodo === 'PIX' && styles.activeTab]} onPress={() => setMetodo('PIX')}>
@@ -123,37 +176,63 @@ export default function DonationScreen() {
                     )}
                 </View>
             )}
+
+            {/* Modal de Seleção de Projeto */}
+            <Modal visible={pickingProject} animationType="fade" transparent>
+                <TouchableOpacity style={styles.modalOverlay} onPress={() => setPickingProject(false)}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Selecione o Projeto</Text>
+                        <FlatList
+                            data={projects}
+                            keyExtractor={item => item.id}
+                            renderItem={renderProjectItem}
+                        />
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </ScrollView>
     );
 }
 
+import { colors } from '../theme/colors';
+
+// ... (imports remain the same)
+
+// ... (component logic remains the same)
+
 const styles = StyleSheet.create({
-    container: { flexGrow: 1, padding: 20, backgroundColor: '#f5f5f5' },
-    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 5, color: '#333' },
-    subtitle: { fontSize: 16, color: '#666', marginBottom: 20 },
+    container: { flexGrow: 1, padding: 20, backgroundColor: colors.background },
+    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: colors.text },
+    pickerButton: { backgroundColor: colors.white, padding: 15, borderRadius: 8, flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, elevation: 1 },
+    pickerText: { fontSize: 16, color: colors.text },
     tabs: { flexDirection: 'row', marginBottom: 20, backgroundColor: '#e0e0e0', borderRadius: 8, padding: 4 },
     tab: { flex: 1, padding: 12, alignItems: 'center', borderRadius: 6 },
-    activeTab: { backgroundColor: '#4a90e2' },
-    tabText: { fontWeight: '600', color: '#666' },
-    activeTabText: { color: '#FFF' },
-    content: { backgroundColor: '#FFF', padding: 20, borderRadius: 12, elevation: 2 },
-    label: { fontSize: 16, marginBottom: 8, fontWeight: '600', color: '#333' },
-    input: { borderWidth: 1, borderColor: '#DDD', borderRadius: 8, padding: 12, fontSize: 18, marginBottom: 20 },
-    button: { backgroundColor: '#00C853', padding: 15, borderRadius: 8, alignItems: 'center' },
-    buttonText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
+    activeTab: { backgroundColor: colors.primary },
+    tabText: { fontWeight: '600', color: colors.textLight },
+    activeTabText: { color: colors.white },
+    content: { backgroundColor: colors.white, padding: 20, borderRadius: 12, elevation: 2 },
+    label: { fontSize: 16, marginBottom: 8, fontWeight: '600', color: colors.text },
+    input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 12, fontSize: 18, marginBottom: 20, color: colors.text },
+    button: { backgroundColor: colors.success, padding: 15, borderRadius: 8, alignItems: 'center' },
+    buttonText: { color: colors.white, fontWeight: 'bold', fontSize: 16 },
     resultContainer: { alignItems: 'center', marginTop: 20 },
-    instructions: { textAlign: 'center', marginVertical: 15, color: '#666' },
-    copyButton: { backgroundColor: '#4a90e2', padding: 12, borderRadius: 8, width: '100%', alignItems: 'center', marginTop: 10 },
-    copyButtonText: { color: '#FFF', fontWeight: 'bold' },
+    instructions: { textAlign: 'center', marginVertical: 15, color: colors.textLight },
+    copyButton: { backgroundColor: colors.primary, padding: 12, borderRadius: 8, width: '100%', alignItems: 'center', marginTop: 10 },
+    copyButtonText: { color: colors.white, fontWeight: 'bold' },
     newButton: { marginTop: 15 },
-    newButtonText: { color: '#666' },
+    newButtonText: { color: colors.textLight },
     coinSelector: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-    coinButton: { flex: 1, padding: 10, borderWidth: 1, borderColor: '#DDD', alignItems: 'center', marginHorizontal: 4, borderRadius: 8 },
-    activeCoin: { backgroundColor: '#333', borderColor: '#333' },
-    coinText: { fontWeight: 'bold', color: '#333' },
-    activeCoinText: { color: '#FFF' },
+    coinButton: { flex: 1, padding: 10, borderWidth: 1, borderColor: colors.border, alignItems: 'center', marginHorizontal: 4, borderRadius: 8 },
+    activeCoin: { backgroundColor: colors.text, borderColor: colors.text },
+    coinText: { fontWeight: 'bold', color: colors.text },
+    activeCoinText: { color: colors.white },
     walletContainer: { alignItems: 'center' },
-    walletLabel: { marginBottom: 10, fontSize: 14, color: '#666' },
-    walletBox: { backgroundColor: '#F0F0F0', padding: 15, borderRadius: 8, width: '100%', marginBottom: 15 },
-    walletAddress: { fontFamily: 'monospace', textAlign: 'center', fontSize: 12 }
+    walletLabel: { marginBottom: 10, fontSize: 14, color: colors.textLight },
+    walletBox: { backgroundColor: colors.background, padding: 15, borderRadius: 8, width: '100%', marginBottom: 15 },
+    walletAddress: { fontFamily: 'monospace', textAlign: 'center', fontSize: 12, color: colors.text },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 40 },
+    modalContent: { backgroundColor: colors.white, borderRadius: 10, padding: 20, maxHeight: 400 },
+    modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center', color: colors.text },
+    modalItem: { padding: 15, borderBottomWidth: 1, borderBottomColor: colors.border },
+    modalItemText: { fontSize: 16, color: colors.text }
 });

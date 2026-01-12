@@ -13,6 +13,7 @@ enum TipoUsuario {
   BENEFICIARIO
   STAFF
   ADMIN
+  INDEFINIDO // Novo usuário, ainda não escolheu
 }
 
 enum TipoAtividade {
@@ -27,8 +28,22 @@ model Usuario {
   email        String      @unique
   senhaHash    String
   tipo         TipoUsuario
+  cargo        String?     // Ex: "Presidente", "Diretor", "Secretário", "Funcionário"
   menorIdade   Boolean     @default(false)
   dataCadastro DateTime    @default(now())
+
+  // LGPD & Segurança
+  cpf              String?     @unique
+  dataNascimento   DateTime?
+  telefone         String?
+  endereco         String?     // Simplificado para JSON se precisar
+  
+  emailVerificado  Boolean     @default(false)
+  tokenVerificacao String?
+  tokenRecuperacao String?
+  
+  termosAceitos    Boolean     @default(false)
+  dataTermos       DateTime?
 
   // Relations
   perfilDoador       PerfilDoador?
@@ -69,6 +84,13 @@ model PerfilBeneficiario {
   id                    String  @id @default(uuid())
   usuarioId             String  @unique
   usuario               Usuario @relation(fields: [usuarioId], references: [id])
+  
+  // JSON estruturado para flexibilidade (contém: Composição Familiar, Socioeconômico, Moradia, Vínculo, Espiritualidade)
+  // Campos explícitos para filtros rápidos
+  rendaFamiliar         Decimal?
+  numeroDependentes     Int?
+  possuiDeficiencia     Boolean  @default(false)
+  
   dadosQuestionarioSocial Json
 }
 
@@ -135,13 +157,32 @@ model Configuracao {
 model Doacao {
   id          String   @id @default(uuid())
   usuarioId   String?
+  projetoId   String?
   usuario     Usuario? @relation(fields: [usuarioId], references: [id])
+  projeto     Projeto? @relation(fields: [projetoId], references: [id])
   valor       Decimal
   metodo      String   // PIX, CRIPTO
   moeda       String   // BRL, ETH, BTC, USDT
   status      String   @default("PENDENTE") // PENDENTE, CONFIRMADO
   txId        String?  // Hash da transação ou ID Pix
   criadoEm    DateTime @default(now())
+}
+
+model Projeto {
+  id          String   @id @default(uuid())
+  nome        String
+  descricao   String?
+  
+  // Chaves de Doação Específicas
+  chavePix    String?
+  walletBtc   String?
+  walletEth   String?
+  walletUsdt  String?
+  
+  ativo       Boolean  @default(true)
+  criadoEm    DateTime @default(now())
+  
+  doacoes     Doacao[]
 }
 
 model ForumPost {

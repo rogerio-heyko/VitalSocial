@@ -3,28 +3,28 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: teleios_postgres
+    container_name: vital_social_postgres
     environment:
-      POSTGRES_USER: teleios_user
-      POSTGRES_PASSWORD: teleios_password
-      POSTGRES_DB: teleios_db
+      POSTGRES_USER: vital_user
+      POSTGRES_PASSWORD: vital_password
+      POSTGRES_DB: vital_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - teleios_net
+      - vital_net
 
   backend:
     build: ./backend
-    container_name: teleios_backend
+    container_name: vital_social_backend
     ports:
       - "3001:3000"
     volumes:
       - ./backend:/app
       - /app/node_modules
     environment:
-      DATABASE_URL: postgres://teleios_user:teleios_password@postgres:5432/teleios_db
+      DATABASE_URL: postgres://vital_user:vital_password@postgres:5432/vital_db
       PORT: 3000
       JWT_SECRET: changeme_in_production
     depends_on:
@@ -33,7 +33,7 @@ services:
 
   frontend:
     image: node:20
-    container_name: teleios_frontend
+    container_name: vital_social_frontend
     working_dir: /app
     volumes:
       - ./frontend:/app
@@ -49,10 +49,10 @@ services:
 
 
     networks:
-      - teleios_net
+      - vital_net
 
 volumes:
   postgres_data:
 
 networks:
-  teleios_net:
+  vital_net:

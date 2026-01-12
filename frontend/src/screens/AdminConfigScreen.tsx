@@ -1,86 +1,67 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import api from '../services/api';
-
-interface ConfigItem {
-    chave: string;
-    valor: string;
-    descricao?: string;
-}
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function AdminConfigScreen() {
-    const [configs, setConfigs] = useState<ConfigItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { user } = useAuth();
 
-    useEffect(() => {
-        loadConfigs();
-    }, []);
-
-    const loadConfigs = async () => {
-        try {
-            const res = await api.get('/admin/config');
-            setConfigs(res.data);
-        } catch (error) {
-            Alert.alert('Erro', 'Falha ao carregar configurações. Verifique suas permissões.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleUpdate = async (chave: string, novoValor: string) => {
-        setConfigs(prev => prev.map(c => c.chave === chave ? { ...c, valor: novoValor } : c));
-    };
-
-    const saveConfig = async (chave: string, valor: string) => {
-        setSaving(true);
-        try {
-            await api.put(`/admin/config/${chave}`, { valor });
-            Alert.alert('Sucesso', 'Configuração atualizada!');
-        } catch (error) {
-            Alert.alert('Erro', 'Falha ao salvar.');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#4a90e2" /></View>;
+    if (user?.tipo !== 'ADMIN') {
+        return (
+            <View style={styles.container}>
+                <Text>Acesso negado.</Text>
+            </View>
+        );
+    }
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>Configurações do Sistema</Text>
-            <Text style={styles.subtitle}>Gerencie chaves PIX e Carteiras Crypto</Text>
+        <View style={styles.container}>
+            <Text style={styles.title}>Painel do Administrador</Text>
 
-            {configs.map(config => (
-                <View key={config.chave} style={styles.card}>
-                    <Text style={styles.label}>{config.descricao || config.chave}</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={config.valor}
-                        onChangeText={text => handleUpdate(config.chave, text)}
-                        placeholder="Não configurado"
-                    />
-                    <TouchableOpacity
-                        style={styles.saveButton}
-                        onPress={() => saveConfig(config.chave, config.valor)}
-                        disabled={saving}
-                    >
-                        <Text style={styles.saveText}>Salvar</Text>
-                    </TouchableOpacity>
-                </View>
-            ))}
-        </ScrollView>
+            <TouchableOpacity
+                style={styles.card}
+                onPress={() => navigation.navigate('AdminUsers')}
+            >
+                <Text style={styles.cardTitle}>👥 Gestão de Equipe</Text>
+                <Text style={styles.cardDesc}>Gerenciar cargos (Diretoria, Funcionários) e permissões.</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                style={styles.card}
+                onPress={() => navigation.navigate('AdminProjects')}
+            >
+                <Text style={styles.cardTitle}>📂 Projetos Sociais</Text>
+                <Text style={styles.cardDesc}>Criar projetos e configurar chaves PIX/Crypto.</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                style={styles.card}
+                onPress={() => { }} // Futuro: Relatórios
+            >
+                <Text style={styles.cardTitle}>📊 Relatórios (Em breve)</Text>
+                <Text style={styles.cardDesc}>Visualizar estatísticas de doações e atividades.</Text>
+            </TouchableOpacity>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { padding: 20, paddingBottom: 50 },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    title: { fontSize: 22, fontWeight: 'bold', marginBottom: 5, color: '#333' },
-    subtitle: { fontSize: 14, color: '#666', marginBottom: 20 },
-    card: { backgroundColor: '#FFF', padding: 15, borderRadius: 10, marginBottom: 15, elevation: 2 },
-    label: { fontWeight: 'bold', marginBottom: 8, color: '#444' },
-    input: { borderWidth: 1, borderColor: '#DDD', borderRadius: 8, padding: 10, marginBottom: 10, color: '#333' },
-    saveButton: { backgroundColor: '#4a90e2', padding: 10, borderRadius: 6, alignItems: 'center', alignSelf: 'flex-end', minWidth: 80 },
-    saveText: { color: '#FFF', fontWeight: 'bold' }
+    container: { flex: 1, padding: 20, backgroundColor: '#f0f2f5' },
+    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#333' },
+    card: {
+        backgroundColor: '#fff',
+        padding: 20,
+        borderRadius: 12,
+        marginBottom: 15,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 1.41,
+    },
+    cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#4a90e2', marginBottom: 5 },
+    cardDesc: { color: '#666', fontSize: 14 }
 });

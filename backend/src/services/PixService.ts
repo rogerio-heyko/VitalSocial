@@ -15,8 +15,8 @@ function crc16(payload: string): string {
 export class PixService {
     private configService = new ConfigService();
 
-    async gerarPayloadPix(valor: number, txId: string = 'TELEIOS01'): Promise<string> {
-        const chavePix = await this.configService.getConfig('PIX_KEY');
+    async gerarPayloadPix(valor: number, txId: string = 'TELEIOS01', chavePixOverride?: string): Promise<string> {
+        const chavePix = chavePixOverride || await this.configService.getConfig('PIX_KEY');
         if (!chavePix) throw new Error('Chave PIX não configurada no sistema.');
 
         const valorStr = valor.toFixed(2);

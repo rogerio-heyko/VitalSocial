@@ -14,8 +14,8 @@ export default function RegisterScreen({ navigation }: any) {
         setLoading(true);
         try {
             await signUp(nome, email, senha);
-            Alert.alert('Sucesso', 'Conta criada! Faça login.');
-            navigation.goBack();
+            // Alert.alert('Sucesso', 'Conta criada! Faça login.');
+            navigation.navigate('EmailVerification', { email });
         } catch (error: any) {
             console.error("Erro detalhado no registro:", JSON.stringify(error, null, 2));
             if (error.response) {

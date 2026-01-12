@@ -23,17 +23,25 @@ export class AdminConfigController {
 
 export class DonationController {
     async createPixDonation(req: Request, res: Response) {
-        const { valor } = req.body;
+        const { valor, projetoId } = req.body;
         const userId = (req as any).user.id;
-
         const txId = `DOA${Date.now().toString().slice(-8)}`;
 
         try {
-            const payload = await pixService.gerarPayloadPix(Number(valor), txId);
+            let chavePix = undefined;
+            if (projetoId) {
+                const projeto = await prisma.projeto.findUnique({ where: { id: projetoId } });
+                if (projeto && projeto.chavePix) {
+                    chavePix = projeto.chavePix;
+                }
+            }
+
+            const payload = await pixService.gerarPayloadPix(Number(valor), txId, chavePix);
 
             const doacao = await prisma.doacao.create({
                 data: {
                     usuarioId: userId,
+                    projetoId: projetoId || null,
                     valor: Number(valor),
                     metodo: 'PIX',
                     moeda: 'BRL',
@@ -53,9 +61,23 @@ export class DonationController {
     }
 
     async getCryptoWallets(req: Request, res: Response) {
-        const btc = await configService.getConfig('WALLET_BTC');
-        const eth = await configService.getConfig('WALLET_ETH');
-        const usdt = await configService.getConfig('WALLET_USDT');
+        const { projetoId } = req.query;
+
+        let btc, eth, usdt;
+
+        if (projetoId) {
+            const projeto = await prisma.projeto.findUnique({ where: { id: String(projetoId) } });
+            if (projeto) {
+                btc = projeto.walletBtc;
+                eth = projeto.walletEth;
+                usdt = projeto.walletUsdt;
+            }
+        }
+
+        // Fallback to global config if no project or specific wallet missing
+        if (!btc) btc = await configService.getConfig('WALLET_BTC');
+        if (!eth) eth = await configService.getConfig('WALLET_ETH');
+        if (!usdt) usdt = await configService.getConfig('WALLET_USDT');
 
         return res.json({
             BTC: btc || 'Não configurado',
