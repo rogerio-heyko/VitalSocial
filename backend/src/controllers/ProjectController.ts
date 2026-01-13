@@ -6,7 +6,7 @@ class ProjectController {
 
     // Criar Projeto (Admin)
     async create(req: Request, res: Response) {
-        const { nome, descricao, instituicao, chavePix, walletBtc, walletEth, walletUsdt, responsavelId } = req.body;
+        const { nome, descricao, instituicao, chavePix, walletBtc, walletEth, walletUsdt } = req.body;
 
         if (!nome) {
             throw new AppError('O nome do projeto é obrigatório.');
@@ -20,8 +20,7 @@ class ProjectController {
                 chavePix,
                 walletBtc,
                 walletEth,
-                walletUsdt,
-                responsavelId
+                walletUsdt
             }
         });
 
