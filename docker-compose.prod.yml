@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: vital_social_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: vital_user
+      POSTGRES_PASSWORD: vital_password
+      POSTGRES_DB: vital_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - vital_net
+
+  backend:
+    build: ./backend
+    container_name: vital_social_backend
+    restart: always
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      DATABASE_URL: postgres://vital_user:vital_password@postgres:5432/vital_db
+      PORT: 3000
+    depends_on:
+      - postgres
+    command: npm run start
+    networks:
+      - vital_net
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: vital_social_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    networks:
+      - vital_net
+
+  certbot:
+    image: certbot/certbot
+    container_name: vital_social_certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+volumes:
+  postgres_data:
+
+networks:
+  vital_net:
