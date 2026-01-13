@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// CONFIGURAÇÃO LAN (Wi-Fi)
-const API_URL = 'http://10.0.0.198:3001';
+// CONFIGURAÇÃO PRODUÇÃO
+const API_URL = 'https://api.vital.social';
+// const API_URL = 'http://10.0.0.198:3001'; // LAN PROVISORIO
 
 const api = axios.create({
     baseURL: API_URL,
