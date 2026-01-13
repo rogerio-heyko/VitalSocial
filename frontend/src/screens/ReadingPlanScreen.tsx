@@ -78,7 +78,7 @@ export default function ReadingPlanScreen() {
         try {
             // "Sl 1, João 1, Efésios 1"
             const parts = trechos.split(',');
-            // For MVP, fetch the FIRST reference found
+            // Fetch the FIRST reference found
             const firstRef = parts[0].trim(); // "Sl 1"
 
             // Basic parsing: "Book Chapter"
@@ -86,63 +86,88 @@ export default function ReadingPlanScreen() {
             const bookName = firstRef.substring(0, lastSpaceIndex).trim(); // "Sl"
             const chapter = firstRef.substring(lastSpaceIndex + 1).trim(); // "1"
 
+            // Map PT references to English for bible-api.com
             const bookMap: Record<string, string> = {
-                'Sl': 'sl', 'Salmos': 'sl', 'Salmo': 'sl',
-                'Gn': 'gn', 'Gênesis': 'gn',
-                'Jo': 'jo', 'João': 'jo',
-                'Ex': 'ex', 'Êxodo': 'ex',
-                'Lv': 'lv', 'Levítico': 'lv',
-                'Nm': 'nm', 'Números': 'nm',
-                'Dt': 'dt', 'Deuteronômio': 'dt',
-                'Js': 'js', 'Josué': 'js',
-                'Jz': 'jz', 'Juízes': 'jz',
-                'Rt': 'rt', 'Rute': 'rt',
-                '1 Sm': '1sm', '1 Samuel': '1sm',
-                '2 Sm': '2sm', '2 Samuel': '2sm',
-                '1 Rs': '1rs', '1 Reis': '1rs',
-                '2 Rs': '2rs', '2 Reis': '2rs',
-                'Is': 'is', 'Isaías': 'is',
-                'Ef': 'ef', 'Efésios': 'ef',
-                'Fp': 'fp', 'Filipenses': 'fp',
-                'Cl': 'cl', 'Colossenses': 'cl',
-                '1 Jo': '1jo',
-                '2 Jo': '2jo',
-                '3 Jo': '3jo',
-                'Jd': 'jd', 'Judas': 'jd',
-                'Ap': 'ap', 'Apocalipse': 'ap',
-                'Rm': 'rm', 'Romanos': 'rm',
-                'Mt': 'mt', 'Mateus': 'mt',
-                'Mc': 'mc', 'Marcos': 'mc',
-                'Lc': 'lc', 'Lucas': 'lc',
-                'At': 'at', 'Atos': 'at',
-                'Hb': 'hb', 'Hebreus': 'hb',
-                'Tg': 'tg', 'Tiago': 'tg',
-                '1 Pe': '1pe', '1 Pedro': '1pe',
-                '2 Pe': '2pe', '2 Pedro': '2pe',
-                '1 Ts': '1ts', '1 Tessalonicenses': '1ts',
-                '2 Ts': '2ts', '2 Tessalonicenses': '2ts',
-                '1 Tm': '1tm', '1 Timóteo': '1tm',
-                '2 Tm': '2tm', '2 Timóteo': '2tm',
-                'Tt': 'tt', 'Tito': 'tt',
-                'Fm': 'fm', 'Filemom': 'fm',
-                'Gl': 'gl', 'Gálatas': 'gl',
-                '1 Co': '1co', '1 Coríntios': '1co',
-                '2 Co': '2co', '2 Coríntios': '2co'
+                // Old Testament
+                'Gn': 'Genesis', 'Gênesis': 'Genesis',
+                'Ex': 'Exodus', 'Êxodo': 'Exodus',
+                'Lv': 'Leviticus', 'Levítico': 'Leviticus',
+                'Nm': 'Numbers', 'Números': 'Numbers',
+                'Dt': 'Deuteronomy', 'Deuteronômio': 'Deuteronomy',
+                'Js': 'Joshua', 'Josué': 'Joshua',
+                'Jz': 'Judges', 'Juízes': 'Judges',
+                'Rt': 'Ruth', 'Rute': 'Ruth',
+                '1 Sm': '1 Samuel', '1 Samuel': '1 Samuel',
+                '2 Sm': '2 Samuel', '2 Samuel': '2 Samuel',
+                '1 Rs': '1 Kings', '1 Reis': '1 Kings',
+                '2 Rs': '2 Kings', '2 Reis': '2 Kings',
+                '1 Cr': '1 Chronicles', '1 Crônicas': '1 Chronicles',
+                '2 Cr': '2 Chronicles', '2 Crônicas': '2 Chronicles',
+                'Ed': 'Ezra', 'Esdras': 'Ezra',
+                'Ne': 'Nehemiah', 'Neemias': 'Nehemiah',
+                'Et': 'Esther', 'Ester': 'Esther',
+                'Jó': 'Job',
+                'Sl': 'Psalms', 'Salmos': 'Psalms', 'Salmo': 'Psalms',
+                'Pv': 'Proverbs', 'Provérbios': 'Proverbs',
+                'Ec': 'Ecclesiastes', 'Eclesiastes': 'Ecclesiastes',
+                'Ct': 'Song of Songs', 'Cânticos': 'Song of Songs',
+                'Is': 'Isaiah', 'Isaías': 'Isaiah',
+                'Jr': 'Jeremiah', 'Jeremias': 'Jeremiah',
+                'Lm': 'Lamentations', 'Lamentações': 'Lamentations',
+                'Ez': 'Ezekiel', 'Ezequiel': 'Ezekiel',
+                'Dn': 'Daniel',
+                'Os': 'Hosea', 'Oseias': 'Hosea',
+                'Jl': 'Joel',
+                'Am': 'Amos',
+                'Ob': 'Obadiah', 'Obadias': 'Obadiah',
+                'Jn': 'Jonah', 'Jonas': 'Jonah',
+                'Mq': 'Micah', 'Miqueias': 'Micah',
+                'Na': 'Nahum', 'Naum': 'Nahum',
+                'Hc': 'Habakkuk', 'Habacuque': 'Habakkuk',
+                'Sf': 'Zephaniah', 'Sofonias': 'Zephaniah',
+                'Ag': 'Haggai', 'Ageu': 'Haggai',
+                'Zc': 'Zechariah', 'Zacarias': 'Zechariah',
+                'Ml': 'Malachi', 'Malaquias': 'Malachi',
+
+                // New Testament
+                'Mt': 'Matthew', 'Mateus': 'Matthew',
+                'Mc': 'Mark', 'Marcos': 'Mark',
+                'Lc': 'Luke', 'Lucas': 'Luke',
+                'Jo': 'John', 'João': 'John',
+                'At': 'Acts', 'Atos': 'Acts',
+                'Rm': 'Romans', 'Romanos': 'Romans',
+                '1 Co': '1 Corinthians', '1 Coríntios': '1 Corinthians',
+                '2 Co': '2 Corinthians', '2 Coríntios': '2 Corinthians',
+                'Gl': 'Galatians', 'Gálatas': 'Galatians',
+                'Ef': 'Ephesians', 'Efésios': 'Ephesians',
+                'Fp': 'Philippians', 'Filipenses': 'Philippians',
+                'Cl': 'Colossians', 'Colossenses': 'Colossians',
+                '1 Ts': '1 Thessalonians', '1 Tessalonicenses': '1 Thessalonians',
+                '2 Ts': '2 Thessalonians', '2 Tessalonicenses': '2 Thessalonians',
+                '1 Tm': '1 Timothy', '1 Timóteo': '1 Timothy',
+                '2 Tm': '2 Timothy', '2 Timóteo': '2 Timothy',
+                'Tt': 'Titus', 'Tito': 'Titus',
+                'Fm': 'Philemon', 'Filemom': 'Philemon',
+                'Hb': 'Hebrews', 'Hebreus': 'Hebrews',
+                'Tg': 'James', 'Tiago': 'James',
+                '1 Pe': '1 Peter', '1 Pedro': '1 Peter',
+                '2 Pe': '2 Peter', '2 Pedro': '2 Peter',
+                '1 Jo': '1 John', '1 João': '1 John',
+                '2 Jo': '2 John', '2 João': '2 John',
+                '3 Jo': '3 John', '3 João': '3 John',
+                'Jd': 'Jude', 'Judas': 'Jude',
+                'Ap': 'Revelation', 'Apocalipse': 'Revelation'
             };
 
-            const abbrev = bookMap[bookName] || 'gn'; // Default to Genesis if fail
+            const englishBook = bookMap[bookName] || 'Genesis';
 
-            // Fetch from ABibiaDigital
-            // URL: https://www.abibliadigital.com.br/api/verses/nvi/:book/:chapter
-            const url = `https://www.abibliadigital.com.br/api/verses/nvi/${abbrev}/${chapter}`;
+            // bible-api.com URL Structure: https://bible-api.com/John+3:16?translation=almeida
+            const query = `${englishBook} ${chapter}`;
+            const url = `https://bible-api.com/${encodeURIComponent(query)}?translation=almeida`;
+
             console.log('Fetching Bible Text:', url);
 
-            const response = await fetch(url, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Accept': 'application/json'
-                }
-            });
+            const response = await fetch(url);
 
             if (!response.ok) {
                 console.log('API Error Status:', response.status);
@@ -151,16 +176,12 @@ export default function ReadingPlanScreen() {
 
             const data = await response.json();
 
-            let text = '';
-            if (data.verses) {
-                text = data.verses.map((v: any) => `${v.number}. ${v.text}`).join('\n\n');
-            }
-
-            setReadingContent(text || "Texto não encontrado.");
+            // data.text contains the full chapter text in bible-api.com
+            setReadingContent(data.text || "Texto não encontrado.");
 
         } catch (error) {
             console.log(error);
-            setReadingContent("Não foi possível carregar o texto bíblico. Verifique sua conexão ou tente mais tarde.");
+            setReadingContent("Não foi possível carregar o texto bíblico. (Serviço temporário Almeida)");
         } finally {
             setLoadingReading(false);
         }
