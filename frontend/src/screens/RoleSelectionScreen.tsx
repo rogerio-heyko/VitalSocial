@@ -13,7 +13,7 @@ export default function RoleSelectionScreen() {
     const { t } = useLanguage();
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1 bg-white items-center justify-center px-8 pb-16 pt-16">
             <Image source={require('../../assets/logo.jpg')} style={styles.logo} resizeMode="contain" />
 
             <Text style={styles.title}>{t('welcomeTitle')}</Text>
@@ -47,8 +47,7 @@ export default function RoleSelectionScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
-    logo: { width: 120, height: 120, marginBottom: 20 },
+    logo: { width: 150, height: 150, marginBottom: 30 },
     title: { fontSize: 26, fontWeight: 'bold', color: '#333', marginBottom: 10, textAlign: 'center' },
     subtitle: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 40 },
     card: {

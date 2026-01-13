@@ -374,7 +374,7 @@ export default function BeneficiaryOnboardingScreen() {
     );
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1 bg-white pt-16">
             <View style={styles.progressBar}>
                 <View style={[styles.progressFill, { width: `${(step / 5) * 100}%` }]} />
             </View>
@@ -436,7 +436,6 @@ export default function BeneficiaryOnboardingScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
     progressBar: { height: 6, backgroundColor: '#eee', width: '100%' },
     progressFill: { height: '100%', backgroundColor: '#4a90e2' },
     stepIndicator: { textAlign: 'center', color: '#888', marginTop: 10, fontSize: 14 },
@@ -462,7 +461,7 @@ const styles = StyleSheet.create({
     termsButton: { padding: 15, backgroundColor: '#f0f0f0', borderRadius: 8, marginVertical: 15, alignItems: 'center' },
     termsButtonText: { color: '#4a90e2', fontWeight: 'bold' },
 
-    footer: { padding: 20, borderTopWidth: 1, borderTopColor: '#eee', flexDirection: 'row', justifyContent: 'space-between' },
+    footer: { padding: 32, paddingBottom: 64, borderTopWidth: 1, borderTopColor: '#eee', flexDirection: 'row', justifyContent: 'space-between' },
     button: { backgroundColor: '#4a90e2', padding: 15, borderRadius: 8, alignItems: 'center', flex: 1, marginLeft: 5 },
     buttonOutline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#4a90e2', marginRight: 5 },
     buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },

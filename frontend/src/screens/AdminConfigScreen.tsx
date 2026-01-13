@@ -5,51 +5,52 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation';
 import { useAuth } from '../contexts/AuthContext';
 
+import { useLanguage } from '../contexts/LanguageContext';
+
 export default function AdminConfigScreen() {
+    const { t } = useLanguage();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { user } = useAuth();
 
     if (user?.tipo !== 'ADMIN') {
         return (
-            <View style={styles.container}>
+
+            <View className="flex-1 justify-center items-center bg-white">
                 <Text>Acesso negado.</Text>
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Painel do Administrador</Text>
-
+        <View className="flex-1 bg-gray-100 px-8 pt-16 pb-16">
             <TouchableOpacity
                 style={styles.card}
                 onPress={() => navigation.navigate('AdminUsers')}
             >
-                <Text style={styles.cardTitle}>👥 Gestão de Equipe</Text>
-                <Text style={styles.cardDesc}>Gerenciar cargos (Diretoria, Funcionários) e permissões.</Text>
+                <Text style={styles.cardTitle}>{t('teamManagement')}</Text>
+                <Text style={styles.cardDesc}>{t('manageRoles')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
                 style={styles.card}
                 onPress={() => navigation.navigate('AdminProjects')}
             >
-                <Text style={styles.cardTitle}>📂 Projetos Sociais</Text>
-                <Text style={styles.cardDesc}>Criar projetos e configurar chaves PIX/Crypto.</Text>
+                <Text style={styles.cardTitle}>{t('socialProjects')}</Text>
+                <Text style={styles.cardDesc}>{t('manageProjects')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
                 style={styles.card}
                 onPress={() => { }} // Futuro: Relatórios
             >
-                <Text style={styles.cardTitle}>📊 Relatórios (Em breve)</Text>
-                <Text style={styles.cardDesc}>Visualizar estatísticas de doações e atividades.</Text>
+                <Text style={styles.cardTitle}>{t('reportsAdmin')}</Text>
+                <Text style={styles.cardDesc}>{t('viewStats')}</Text>
             </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: '#f0f2f5' },
     title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#333' },
     card: {
         backgroundColor: '#fff',

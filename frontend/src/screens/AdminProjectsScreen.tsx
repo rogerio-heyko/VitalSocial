@@ -119,7 +119,7 @@ export default function AdminProjectsScreen() {
     );
 
     return (
-        <View className="flex-1 px-5 pt-12 bg-gray-100">
+        <View className="flex-1 px-8 pt-16 pb-16 bg-gray-100">
             <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
                 <Text style={styles.addButtonText}>+ Novo Projeto</Text>
             </TouchableOpacity>

@@ -19,6 +19,8 @@ import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import AdminUsersScreen from '../screens/AdminUsersScreen';
 import AdminProjectsScreen from '../screens/AdminProjectsScreen';
+import MainTabNavigator from './MainTabNavigator';
+import GradientHeader from '../components/GradientHeader';
 import { View, Text, Button, StyleSheet } from 'react-native';
 
 export type RootStackParamList = {
@@ -40,6 +42,9 @@ export type RootStackParamList = {
     AdminUsers: undefined;
     AdminProjects: undefined;
     ActivityDetails: { activityId: string };
+    ProfessorDashboard: undefined;
+    ClassReport: { atividadeId: string; titulo: string };
+    MainTabs: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -72,16 +77,25 @@ export default function Routes() {
                         </Stack.Group>
                     ) : (
                         /* Stack Principal (Usuários com Role definida) */
-                        <Stack.Group>
-                            <Stack.Screen name="Home" component={HomeScreen} />
-                            <Stack.Screen name="ReadingPlan" component={ReadingPlanScreen} options={{ headerShown: true, title: 'Leitura Bíblica' }} />
-                            <Stack.Screen name="Profile" component={ProfileScreen} />
-                            <Stack.Screen name="Donation" component={DonationScreen} />
-                            <Stack.Screen name="AdminConfig" component={AdminConfigScreen} />
-                            <Stack.Screen name="AdminUsers" component={AdminUsersScreen} options={{ title: 'Gestão de Usuários' }} />
-                            <Stack.Screen name="AdminProjects" component={AdminProjectsScreen} options={{ title: 'Gestão de Projetos' }} />
-                            <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} />
-                            {/* Permite acessar Onboarding caso precise editar (opcional) ou criar rotas de edição separadas */}
+                        <Stack.Group screenOptions={{
+                            headerShown: true,
+                            header: ({ navigation, route, options }) => {
+                                const title = options.title !== undefined ? options.title : route.name;
+                                return <GradientHeader title={title} showBack={true} showLogo={true} />;
+                            }
+                        }}>
+                            <Stack.Screen name="MainTabs" component={MainTabNavigator} options={{ headerShown: false }} />
+
+                            {/* Telas que ficam POR CIMA das abas (sem Bottom Tabs) */}
+                            <Stack.Screen name="AdminConfig" component={AdminConfigScreen} options={{ title: 'Configurações' }} />
+                            <Stack.Screen name="AdminUsers" component={AdminUsersScreen} options={{ title: 'Gestão de Equipe' }} />
+                            <Stack.Screen name="AdminProjects" component={AdminProjectsScreen} options={{ title: 'Projetos' }} />
+                            <Stack.Screen name="AdminProjects" component={AdminProjectsScreen} options={{ title: 'Projetos' }} />
+                            <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} options={{ title: 'Detalhes' }} />
+
+                            {/* Professor Flow */}
+                            <Stack.Screen name="ProfessorDashboard" component={require('../screens/ProfessorDashboardScreen').default} options={{ title: 'Minhas Turmas' }} />
+                            <Stack.Screen name="ClassReport" component={require('../screens/ClassReportScreen').default} options={{ title: 'Relatório de Aula' }} />
                         </Stack.Group>
                     )
                 ) : (

@@ -69,7 +69,7 @@ export default function AdminUsersScreen() {
     );
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1 bg-gray-100 px-8 pt-16 pb-16">
             <TextInput
                 style={styles.searchBar}
                 placeholder="Buscar por nome ou email..."
@@ -126,7 +126,6 @@ export default function AdminUsersScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
     searchBar: { backgroundColor: '#fff', padding: 12, borderRadius: 8, marginBottom: 15, borderWidth: 1, borderColor: '#ddd' },
     card: { backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     name: { fontSize: 16, fontWeight: 'bold' },

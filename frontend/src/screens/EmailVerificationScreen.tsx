@@ -37,7 +37,7 @@ export default function EmailVerificationScreen() {
     }
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1 bg-white justify-center px-8 pt-16 pb-16">
             <Text style={styles.title}>Verifique seu E-mail</Text>
             <Text style={styles.subtitle}>Enviamos um código para:</Text>
             <Text style={styles.email}>{email}</Text>
@@ -72,7 +72,6 @@ export default function EmailVerificationScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#f9f9f9' },
     title: { fontSize: 26, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 10 },
     subtitle: { fontSize: 16, color: '#666', textAlign: 'center' },
     email: { fontSize: 18, fontWeight: 'bold', color: '#4a90e2', textAlign: 'center', marginBottom: 20 },

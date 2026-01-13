@@ -10,7 +10,10 @@ interface Project {
     descricao?: string;
 }
 
+import { useLanguage } from '../contexts/LanguageContext';
+
 export default function DonationScreen() {
+    const { t } = useLanguage();
     const [projects, setProjects] = useState<Project[]>([]);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [pickingProject, setPickingProject] = useState(false);
@@ -99,12 +102,12 @@ export default function DonationScreen() {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>Faça sua Doação</Text>
+            <Text style={styles.title}>{t('donateTitle')}</Text>
 
-            <Text style={styles.label}>Destinar para:</Text>
+            <Text style={styles.label}>{t('destinedTo')}</Text>
             <TouchableOpacity style={styles.pickerButton} onPress={() => setPickingProject(true)}>
                 <Text style={styles.pickerText}>
-                    {selectedProject ? selectedProject.nome : 'Selecione um Projeto...'}
+                    {selectedProject ? selectedProject.nome : t('selectProject')}
                 </Text>
                 <Text>▼</Text>
             </TouchableOpacity>
@@ -120,7 +123,7 @@ export default function DonationScreen() {
 
             {metodo === 'PIX' ? (
                 <View style={styles.content}>
-                    <Text style={styles.label}>Valor (R$)</Text>
+                    <Text style={styles.label}>{t('amount')}</Text>
                     <TextInput
                         style={styles.input}
                         keyboardType="numeric"
@@ -131,7 +134,7 @@ export default function DonationScreen() {
 
                     {!pixPayload && (
                         <TouchableOpacity style={styles.button} onPress={gerarPix} disabled={loading}>
-                            {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Gerar QR Code</Text>}
+                            {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>{t('generateQRCode')}</Text>}
                         </TouchableOpacity>
                     )}
 
@@ -140,17 +143,17 @@ export default function DonationScreen() {
                             <QRCode value={pixPayload} size={200} />
                             <Text style={styles.instructions}>{qrCodeInstructions}</Text>
                             <TouchableOpacity style={styles.copyButton} onPress={() => copiarCodigo(pixPayload)}>
-                                <Text style={styles.copyButtonText}>Copiar Código PIX</Text>
+                                <Text style={styles.copyButtonText}>{t('copyPix')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.newButton} onPress={() => setPixPayload('')}>
-                                <Text style={styles.newButtonText}>Nova Doação</Text>
+                                <Text style={styles.newButtonText}>{t('newDonation')}</Text>
                             </TouchableOpacity>
                         </View>
                     ) : null}
                 </View>
             ) : (
                 <View style={styles.content}>
-                    <Text style={styles.label}>Selecione a Moeda</Text>
+                    <Text style={styles.label}>{t('selectCoin')}</Text>
                     <View style={styles.coinSelector}>
                         {[
                             { code: 'BTC', label: 'BTC (Bitcoin)' },
@@ -169,12 +172,12 @@ export default function DonationScreen() {
 
                     {wallets && (
                         <View style={styles.walletContainer}>
-                            <Text style={styles.walletLabel}>Endereço da Carteira ({selectedCoin}):</Text>
+                            <Text style={styles.walletLabel}>{t('walletAddress')} ({selectedCoin}):</Text>
                             <View style={styles.walletBox}>
                                 <Text style={styles.walletAddress}>{wallets[selectedCoin]}</Text>
                             </View>
                             <TouchableOpacity style={styles.copyButton} onPress={() => copiarCodigo(wallets[selectedCoin])}>
-                                <Text style={styles.copyButtonText}>Copiar Endereço</Text>
+                                <Text style={styles.copyButtonText}>{t('copyAddress')}</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -205,7 +208,7 @@ import { colors } from '../theme/colors';
 // ... (component logic remains the same)
 
 const styles = StyleSheet.create({
-    container: { flexGrow: 1, padding: 20, backgroundColor: colors.background },
+    container: { flexGrow: 1, paddingHorizontal: 32, paddingTop: 64, paddingBottom: 64, backgroundColor: colors.background },
     title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: colors.text },
     pickerButton: { backgroundColor: colors.white, padding: 15, borderRadius: 8, flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, elevation: 1 },
     pickerText: { fontSize: 16, color: colors.text },

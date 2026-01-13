@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -13,23 +14,13 @@ export default function ProfileScreen() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const { language, setLanguage, t } = useLanguage();
+
     async function handleSave() {
         if (loading) return;
         setLoading(true);
         try {
-            // Assuming there is an endpoint for updating profile. If not, we might need to create it or just demo logout.
-            // Checking backend routes... ProfileController.upsert exists but strictly for 'perfil' data (doador/beneficiario).
-            // The user table (names/pass) update might not be fully exposed yet in the routes we built.
-            // Wait, checking User Management (CRUD). We have AuthController.
-            // Actually, looking at the previous session summary, we implemented ProfileController for Doador/Beneficiario details.
-            // We didn't explicitly make a "Update User Name/Pass" route in the summary.
-            // For now, I will implement the UI. If the endpoint is missing, I will stick to Logout or add the endpoint briefly.
-            // Let's assume for this step we mostly want Logout and Viewing data. 
-            // I will add a simple endpoint call placeholder.
-
-            // await api.put('/users', { nome: name, senha: password || undefined });
             Alert.alert('Aviso', 'Funcionalidade de editar dados básicos (Nome/Senha) será implementada na próxima fase de Backend. Por enquanto, gerencie seus detalhes de Benficiário/Doador.');
-
         } catch (error) {
             Alert.alert('Erro', 'Falha ao atualizar perfil.');
         } finally {
@@ -39,17 +30,17 @@ export default function ProfileScreen() {
 
     function handleLogout() {
         Alert.alert(
-            'Sair',
-            'Tem certeza que deseja sair?',
+            t('logoutConfirmTitle'),
+            t('logoutConfirmMessage'),
             [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Sair', style: 'destructive', onPress: signOut }
+                { text: t('cancel'), style: 'cancel' },
+                { text: t('logout'), style: 'destructive', onPress: signOut }
             ]
         );
     }
 
     return (
-        <View className="flex-1 bg-gray-100 px-5 pt-12">
+        <View className="flex-1 bg-gray-100 px-8 pt-16 pb-16">
             <View className="items-center mb-10 mt-10">
                 <View style={styles.avatarPlaceholder}>
                     <Text style={styles.avatarText}>{user?.nome?.charAt(0)}</Text>
@@ -59,40 +50,67 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.form}>
-                <Text style={styles.label}>Nome</Text>
+
+                {/* Language Selector */}
+                <View style={styles.languageContainer}>
+                    <Text style={[styles.label, { marginBottom: 0 }]}>{t('language')}</Text>
+                    <View style={styles.languageOptions}>
+                        <TouchableOpacity onPress={() => setLanguage('pt-BR')} style={[styles.langButton, language === 'pt-BR' && styles.langButtonActive]}>
+                            <Text style={styles.langText}>🇧🇷</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setLanguage('pt-PT')} style={[styles.langButton, language === 'pt-PT' && styles.langButtonActive]}>
+                            <Text style={styles.langText}>🇵🇹</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setLanguage('es')} style={[styles.langButton, language === 'es' && styles.langButtonActive]}>
+                            <Text style={styles.langText}>🇪🇸</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setLanguage('en')} style={[styles.langButton, language === 'en' && styles.langButtonActive]}>
+                            <Text style={styles.langText}>🇺🇸</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                <View style={styles.divider} />
+
+                <Text style={styles.label}>{t('name')}</Text>
                 <TextInput
                     style={styles.input}
                     value={name}
                     onChangeText={setName}
                 />
 
-                <Text style={styles.label}>Nova Senha (Opcional)</Text>
+                <Text style={styles.label}>{t('newPassword')}</Text>
                 <TextInput
                     style={styles.input}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry
-                    placeholder="Deixe em branco para manter"
+                    placeholder={t('leaveBlank')}
                 />
 
-                <TouchableOpacity className="bg-green-500 p-4 rounded-lg items-center mt-8" onPress={handleSave} disabled={loading}>
-                    {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveButtonText}>Salvar Alterações</Text>}
+                <TouchableOpacity className="bg-[#8BC441] p-4 rounded-lg items-center mt-8" onPress={handleSave} disabled={loading}>
+                    {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveButtonText}>{t('saveChanges')}</Text>}
                 </TouchableOpacity>
 
                 <View style={styles.divider} />
 
                 <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Donation')}>
-                    <Text style={styles.actionButtonText}>🙏 Fazer Doação</Text>
+                    <Text style={styles.actionButtonText}>{t('donate')}</Text>
                 </TouchableOpacity>
 
-                {user?.tipo === 'ADMIN' && (
-                    <TouchableOpacity style={[styles.actionButton, styles.adminButton]} onPress={() => navigation.navigate('AdminConfig')}>
-                        <Text style={styles.actionButtonText}>⚙️ Configurações (Admin)</Text>
-                    </TouchableOpacity>
+                {(user?.tipo === 'ADMIN' || user?.tipo === 'STAFF') && (
+                    <>
+                        <TouchableOpacity style={[styles.actionButton, styles.adminButton]} onPress={() => navigation.navigate('AdminConfig')}>
+                            <Text style={styles.actionButtonText}>{t('adminConfig')}</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#EF5825' }]} onPress={() => navigation.navigate('ProfessorDashboard')}>
+                            <Text style={styles.actionButtonText}>Minhas Turmas (Prof)</Text>
+                        </TouchableOpacity>
+                    </>
                 )}
 
-                <TouchableOpacity style={styles.logoutButton} onPress={signOut}>
-                    <Text style={styles.logoutButtonText}>Sair do App</Text>
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                    <Text style={styles.logoutButtonText}>{t('logout')}</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -109,9 +127,14 @@ const styles = StyleSheet.create({
     input: { borderWidth: 1, borderColor: '#ddd', padding: 12, borderRadius: 8, marginBottom: 16, backgroundColor: '#fafafa' },
     saveButtonText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
     divider: { height: 1, backgroundColor: '#DDD', marginVertical: 20 },
-    actionButton: { backgroundColor: '#4a90e2', padding: 15, borderRadius: 8, alignItems: 'center', marginBottom: 10 },
-    adminButton: { backgroundColor: '#333' },
+    actionButton: { backgroundColor: '#00A09A', padding: 15, borderRadius: 8, alignItems: 'center', marginBottom: 10 }, // Brand Teal
+    adminButton: { backgroundColor: '#333' }, // Keep Dark for Admin? Or use Brand Teal/Orange? Let's use darker brand or keep Black as distinct
     actionButtonText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
-    logoutButton: { marginTop: 10, padding: 15, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#FF3B30' },
-    logoutButtonText: { color: '#FF3B30', fontWeight: 'bold', fontSize: 16 }
+    logoutButton: { marginTop: 10, padding: 15, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#EE282F' }, // Brand Red
+    logoutButtonText: { color: '#EE282F', fontWeight: 'bold', fontSize: 16 },
+    languageContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+    languageOptions: { flexDirection: 'row' },
+    langButton: { padding: 8, borderRadius: 8, marginLeft: 8, backgroundColor: '#f0f0f0' },
+    langButtonActive: { backgroundColor: '#e0f7fa', borderWidth: 1, borderColor: '#00A09A' },
+    langText: { fontSize: 20 }
 });

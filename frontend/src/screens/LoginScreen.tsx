@@ -32,8 +32,10 @@ export default function LoginScreen({ navigation }: any) {
     }
 
     return (
-        <View style={styles.container}>
-            <Image source={require('../../assets/logo.jpg')} style={styles.logo} resizeMode="contain" />
+        <View className="flex-1 bg-white justify-center px-8 pt-16 pb-16">
+            <View style={styles.logoContainer}>
+                <Image source={require('../../assets/logo.jpg')} style={styles.logo} resizeMode="contain" />
+            </View>
             <Text style={styles.tagline}>{t('tagline')}</Text>
 
             <TextInput
@@ -70,7 +72,7 @@ export default function LoginScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: colors.background },
+    logoContainer: { alignItems: 'center', marginBottom: 40 },
     logo: { width: '100%', height: 120, marginBottom: 10 },
     tagline: { fontSize: 14, color: colors.secondary, textAlign: 'center', marginBottom: 30, fontStyle: 'italic' },
     input: { width: '100%', height: 50, borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 15, marginBottom: 15, backgroundColor: colors.white, fontSize: 16, color: colors.text },

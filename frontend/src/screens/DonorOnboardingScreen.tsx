@@ -42,8 +42,8 @@ export default function DonorOnboardingScreen() {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Torne-se um Doador</Text>
+        <View className="flex-1 bg-white px-8 pt-16 pb-16">
+            <Text style={styles.title}>Cadastro de Doador</Text>
             <Text style={styles.description}>
                 Sua contribuição mensal ajuda a manter nossos projetos. Você pode cancelar a qualquer momento.
             </Text>
@@ -75,8 +75,7 @@ export default function DonorOnboardingScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: '#fff', justifyContent: 'center' },
-    title: { fontSize: 24, fontWeight: 'bold', color: '#4a90e2', marginBottom: 10 },
+    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
     description: { fontSize: 16, color: '#666', marginBottom: 30 },
     label: { fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 8 },
     input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 15, fontSize: 16, marginBottom: 20, backgroundColor: '#f9f9f9' },

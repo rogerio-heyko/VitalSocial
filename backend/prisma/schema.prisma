@@ -43,7 +43,11 @@ model Usuario {
   tokenRecuperacao String?
   
   termosAceitos    Boolean     @default(false)
+
   dataTermos       DateTime?
+
+  // Notificações
+  pushToken        String?
 
   // Relations
   perfilDoador       PerfilDoador?
@@ -56,7 +60,7 @@ model Usuario {
 
   inscricoes         Inscricao[]
   atividadesMinistradas Atividade[] // Professor
-  leiturasConcluidas LeituraConcluida[]
+  leiturasConcluidas LeituraUsuario[]
   doacoes            Doacao[]
   postsForum         ForumPost[]
 }
@@ -104,6 +108,7 @@ model Atividade {
   
   inscricoes           Inscricao[]
   postsForum           ForumPost[]
+  relatorios           RelatorioAula[]
 }
 
 model Inscricao {
@@ -123,28 +128,44 @@ model Presenca {
   inscricaoId String
   inscricao   Inscricao @relation(fields: [inscricaoId], references: [id])
   dataAula    DateTime
-  presente    Boolean  @default(false)
-  criadoEm    DateTime @default(now())
+  presente       Boolean  @default(false)
+  relatorioAulaId String?
+  relatorioAula  RelatorioAula? @relation(fields: [relatorioAulaId], references: [id])
+  criadoEm       DateTime @default(now())
 }
 
-model LeituraBiblica {
+model PlanoLeitura {
   id              String   @id @default(uuid())
+  dia             Int      @unique // Dia 1 a 365
   trechosBiblicos String
   reflexao        String?
-  dataLeitura     DateTime @default(now())
   criadoEm        DateTime @default(now())
-  leiturasConcluidas LeituraConcluida[]
+  
+  leituras        LeituraUsuario[]
 }
 
-model LeituraConcluida {
+model LeituraUsuario {
   id              String          @id @default(uuid())
   usuarioId       String
   usuario         Usuario         @relation(fields: [usuarioId], references: [id])
-  leituraBiblicaId String
-  leituraBiblica  LeituraBiblica  @relation(fields: [leituraBiblicaId], references: [id])
-  concluidoEm     DateTime        @default(now())
+  planoLeituraId  String
+  planoLeitura    PlanoLeitura    @relation(fields: [planoLeituraId], references: [id])
+  concluido       Boolean         @default(true)
+  dataConclusao   DateTime        @default(now())
 
-  @@unique([usuarioId, leituraBiblicaId])
+  @@unique([usuarioId, planoLeituraId])
+}
+
+model RelatorioAula {
+  id          String   @id @default(uuid())
+  atividadeId String
+  atividade   Atividade @relation(fields: [atividadeId], references: [id])
+  dataAula    DateTime
+  descricao   String
+  fotoUrl     String?
+  criadoEm    DateTime @default(now())
+  
+  presencas   Presenca[]
 }
 
 model Configuracao {

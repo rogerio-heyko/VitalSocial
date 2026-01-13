@@ -33,8 +33,8 @@ export default function RegisterScreen({ navigation }: any) {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Criar Conta</Text>
+        <View className="flex-1 bg-white justify-center px-8 pt-16 pb-16">
+            <Text style={styles.title}>Crie sua conta</Text>
             <TextInput
                 style={styles.input}
                 placeholder="Nome"
@@ -61,7 +61,6 @@ export default function RegisterScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', padding: 20 },
-    title: { fontSize: 24, marginBottom: 20, textAlign: 'center' },
+    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
     input: { borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 5 },
 });

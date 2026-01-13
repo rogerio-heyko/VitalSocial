@@ -1,18 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 
 export default function ActivityDetailsScreen({ route }: any) {
-    const { activityId } = route.params;
+    const { activityId, activity } = route.params;
 
     return (
-        <View style={styles.container}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 32, paddingTop: 64, paddingBottom: 64, backgroundColor: '#fff' }}>
+            <Image source={{ uri: activity.image }} style={styles.image} />
             <Text style={styles.title}>Detalhes da Atividade</Text>
             <Text>ID: {activityId}</Text>
-        </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    image: { width: '100%', height: 200, borderRadius: 8, marginBottom: 20 },
     title: { fontSize: 20, fontWeight: 'bold' }
 });

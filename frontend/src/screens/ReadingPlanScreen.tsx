@@ -1,24 +1,47 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl, Modal, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import api from '../services/api';
+// Using fetch directly for external API or creating a new service method
+import { Ionicons } from '@expo/vector-icons';
 
 interface ReadingPlan {
-    id: number;
+    id: string; // UUID
+    dia: number;
     trechosBiblicos: string;
     reflexao: string;
     lido: boolean;
 }
 
+
+
+import { useLanguage } from '../contexts/LanguageContext';
+import { translateBibleRef } from '../utils/bibleTranslator';
+
 export default function ReadingPlanScreen() {
+    const { t, language } = useLanguage();
     const [plans, setPlans] = useState<ReadingPlan[]>([]);
     const [refreshing, setRefreshing] = useState(false);
-    const [expandedId, setExpandedId] = useState<number | null>(null);
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+    const flatListRef = React.useRef<FlatList>(null);
+
+    // Reading Modal State
+    const [modalVisible, setModalVisible] = useState(false);
+    const [readingContent, setReadingContent] = useState<string | null>(null);
+    const [loadingReading, setLoadingReading] = useState(false);
+    const [currentReadingTitle, setCurrentReadingTitle] = useState('');
 
     async function loadData() {
         try {
             setRefreshing(true);
             const response = await api.get('/leitura');
             setPlans(response.data);
+
+            // Optional: Auto-scroll to today
+            // const dayOfYear = getDayOfYear();
+            // const index = response.data.findIndex(p => p.dia === dayOfYear);
+            // if (index !== -1 && flatListRef.current) {
+            //    setTimeout(() => flatListRef.current?.scrollToIndex({ index, animated: true }), 500);
+            // }
         } catch (error) {
             console.log(error);
             Alert.alert('Erro', 'Não foi possível carregar o plano de leitura.');
@@ -31,11 +54,9 @@ export default function ReadingPlanScreen() {
         loadData();
     }, []);
 
-    async function toggleReadStatus(id: number) {
+    async function toggleReadStatus(id: string) {
         try {
             const response = await api.post(`/leitura/${id}/concluir`);
-            // Update local state to reflect change immediately (optimistic update or re-fetch)
-            // Here we use the response to be sure
             const updatedStatus = response.data.status === 'concluido';
 
             setPlans(currentPlans =>
@@ -48,31 +69,209 @@ export default function ReadingPlanScreen() {
         }
     }
 
+    async function openReading(trechos: string) {
+        setModalVisible(true);
+        setLoadingReading(true);
+        setCurrentReadingTitle(trechos);
+        setReadingContent(null);
+
+        try {
+            // "Sl 1, João 1, Efésios 1"
+            const parts = trechos.split(',');
+            // For MVP, fetch the FIRST reference found
+            const firstRef = parts[0].trim(); // "Sl 1"
+
+            // Basic parsing: "Book Chapter"
+            const lastSpaceIndex = firstRef.lastIndexOf(' ');
+            const bookName = firstRef.substring(0, lastSpaceIndex).trim(); // "Sl"
+            const chapter = firstRef.substring(lastSpaceIndex + 1).trim(); // "1"
+
+            const bookMap: Record<string, string> = {
+                'Sl': 'sl', 'Salmos': 'sl', 'Salmo': 'sl',
+                'Gn': 'gn', 'Gênesis': 'gn',
+                'Jo': 'jo', 'João': 'jo',
+                'Ex': 'ex', 'Êxodo': 'ex',
+                'Lv': 'lv', 'Levítico': 'lv',
+                'Nm': 'nm', 'Números': 'nm',
+                'Dt': 'dt', 'Deuteronômio': 'dt',
+                'Js': 'js', 'Josué': 'js',
+                'Jz': 'jz', 'Juízes': 'jz',
+                'Rt': 'rt', 'Rute': 'rt',
+                '1 Sm': '1sm', '1 Samuel': '1sm',
+                '2 Sm': '2sm', '2 Samuel': '2sm',
+                '1 Rs': '1rs', '1 Reis': '1rs',
+                '2 Rs': '2rs', '2 Reis': '2rs',
+                'Is': 'is', 'Isaías': 'is',
+                'Ef': 'ef', 'Efésios': 'ef',
+                'Fp': 'fp', 'Filipenses': 'fp',
+                'Cl': 'cl', 'Colossenses': 'cl',
+                '1 Jo': '1jo',
+                '2 Jo': '2jo',
+                '3 Jo': '3jo',
+                'Jd': 'jd', 'Judas': 'jd',
+                'Ap': 'ap', 'Apocalipse': 'ap',
+                'Rm': 'rm', 'Romanos': 'rm',
+                'Mt': 'mt', 'Mateus': 'mt',
+                'Mc': 'mc', 'Marcos': 'mc',
+                'Lc': 'lc', 'Lucas': 'lc',
+                'At': 'at', 'Atos': 'at',
+                'Hb': 'hb', 'Hebreus': 'hb',
+                'Tg': 'tg', 'Tiago': 'tg',
+                '1 Pe': '1pe', '1 Pedro': '1pe',
+                '2 Pe': '2pe', '2 Pedro': '2pe',
+                '1 Ts': '1ts', '1 Tessalonicenses': '1ts',
+                '2 Ts': '2ts', '2 Tessalonicenses': '2ts',
+                '1 Tm': '1tm', '1 Timóteo': '1tm',
+                '2 Tm': '2tm', '2 Timóteo': '2tm',
+                'Tt': 'tt', 'Tito': 'tt',
+                'Fm': 'fm', 'Filemom': 'fm',
+                'Gl': 'gl', 'Gálatas': 'gl',
+                '1 Co': '1co', '1 Coríntios': '1co',
+                '2 Co': '2co', '2 Coríntios': '2co'
+            };
+
+            const abbrev = bookMap[bookName] || 'gn'; // Default to Genesis if fail
+
+            // Fetch from ABibiaDigital
+            // URL: https://www.abibliadigital.com.br/api/verses/nvi/:book/:chapter
+            const url = `https://www.abibliadigital.com.br/api/verses/nvi/${abbrev}/${chapter}`;
+            console.log('Fetching Bible Text:', url);
+
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                console.log('API Error Status:', response.status);
+                throw new Error('Falha na API: ' + response.status);
+            }
+
+            const data = await response.json();
+
+            let text = '';
+            if (data.verses) {
+                text = data.verses.map((v: any) => `${v.number}. ${v.text}`).join('\n\n');
+            }
+
+            setReadingContent(text || "Texto não encontrado.");
+
+        } catch (error) {
+            console.log(error);
+            setReadingContent("Não foi possível carregar o texto bíblico. Verifique sua conexão ou tente mais tarde.");
+        } finally {
+            setLoadingReading(false);
+        }
+    }
+
     const renderItem = ({ item }: { item: ReadingPlan }) => {
         const isExpanded = expandedId === item.id;
 
         return (
             <TouchableOpacity
+                key={item.id}
                 style={[styles.card, item.lido && styles.cardRead]}
                 onPress={() => setExpandedId(isExpanded ? null : item.id)}
                 activeOpacity={0.8}
             >
                 <View style={styles.header}>
                     <View>
-                        <Text style={styles.dayText}>Leitura #{item.id}</Text>
-                        <Text style={[styles.title, item.lido && styles.textRead]}>{item.trechosBiblicos}</Text>
+                        <Text style={styles.dayText}>{t('day')} {item.dia}</Text>
+                        <Text style={[styles.title, item.lido && styles.textRead]}>
+                            {translateBibleRef(item.trechosBiblicos, language)}
+                        </Text>
                     </View>
-                    <TouchableOpacity onPress={() => toggleReadStatus(item.id)}>
-                        <View style={[styles.checkbox, item.lido && styles.checkboxChecked]}>
-                            {item.lido && <Text style={styles.checkmark}>✓</Text>}
-                        </View>
+                    <TouchableOpacity
+                        style={[styles.checkbox, item.lido && styles.checkboxChecked]}
+                        onPress={() => toggleReadStatus(item.id)}
+                    >
+                        {item.lido && <Ionicons name="checkmark" size={18} color="#fff" />}
                     </TouchableOpacity>
                 </View>
 
                 {isExpanded && (
                     <View style={styles.content}>
-                        <Text style={styles.reflectionLabel}>Reflexão:</Text>
-                        <Text style={styles.reflectionText}>{item.reflexao}</Text>
+                        <Text style={styles.reflectionLabel}>{t('reflection')}</Text>
+                        <Text style={styles.reflectionText}>
+                            {item.reflexao.replace(/(FASE \d+):? (.*)/i, (match, phasePart, descPart) => {
+                                const phases: Record<string, string> = {
+                                    'pt-BR': `FASE ${phasePart.split(' ')[1]}`,
+                                    'pt-PT': `FASE ${phasePart.split(' ')[1]}`,
+                                    'es': `FASE ${phasePart.split(' ')[1]}`,
+                                    'en': `PHASE ${phasePart.split(' ')[1]}`
+                                };
+
+                                // Map known descriptions
+                                const descriptions: Record<string, { en: string; es: string }> = {
+                                    'A identidade e o Amor (João e Cartas da Graça) - Foco: Quem é Jesus e quem você é nEle.': {
+                                        en: 'Identity and Love (John and Letters of Grace) - Focus: Who Jesus is and who you are in Him.',
+                                        es: 'La identidad y el Amor (Juan y Cartas de la Gracia) - Enfoque: Quién es Jesús y quién eres tú en Él.'
+                                    },
+                                    // Fallback without dot just in case
+                                    'A identidade e o Amor (João e Cartas da Graça) - Foco: Quem é Jesus e quem você é nEle': {
+                                        en: 'Identity and Love (John and Letters of Grace) - Focus: Who Jesus is and who you are in Him',
+                                        es: 'La identidad y el Amor (Juan y Cartas de la Gracia) - Enfoque: Quién es Jesús y quién eres tú en Él'
+                                    },
+                                    'Romanos e a Teologia da Salvação (Romanos e Gálatas) - Foco: Justificados pela Fé.': {
+                                        en: 'Romans and the Theology of Salvation (Romans and Galatians) - Focus: Justified by Faith.',
+                                        es: 'Romanos y la Teología de la Salvación (Romanos y Gálatas) - Enfoque: Justificados por la Fe.'
+                                    },
+                                    'A Igreja e a Missão (Atos e Epístolas Missionárias) - Foco: O Evangelho em movimento.': {
+                                        en: 'The Church and the Mission (Acts and Missionary Epistles) - Focus: The Gospel in motion.',
+                                        es: 'La Iglesia y la Misión (Hechos y Epístolas Misioneras) - Enfoque: El Evangelio en movimiento.'
+                                    },
+                                    'Sabedoria Prática e Vida Cristã (Tiago, Pedro, Hebreus) - Foco: A Fé que opera obras.': {
+                                        en: 'Practical Wisdom and Christian Life (James, Peter, Hebrews) - Focus: Faith that produces works.',
+                                        es: 'Sabiduría Práctica y Vida Cristiana (Santiago, Pedro, Hebreos) - Enfoque: La Fe que produce obras.'
+                                    },
+                                    'O Reino Prometido (Mateus e Marcos) - Foco: O Rei chegou.': {
+                                        en: 'The Promised Kingdom (Matthew and Mark) - Focus: The King has arrived.',
+                                        es: 'El Reino Prometido (Mateo y Marcos) - Enfoque: El Rey ha llegado.'
+                                    },
+                                    'O Início e a Sabedoria (Gênesis e Provérbios) - Foco: Deus como Criador. Lendo o AT com a mente renovada.': {
+                                        en: 'The Beginning and Wisdom (Genesis and Proverbs) - Focus: God as Creator. Reading the OT with a renewed mind.',
+                                        es: 'El Principio y la Sabiduría (Génesis y Proverbios) - Enfoque: Dios como Creador. Leyendo el AT con una mente renovada.'
+                                    },
+                                    'Providência e Êxodo (José e Moisés) - Foco: Deus cuida e Deus liberta.': {
+                                        en: 'Providence and Exodus (Joseph and Moses) - Focus: God cares and God delivers.',
+                                        es: 'Providencia y Éxodo (José y Moisés) - Enfoque: Dios cuida y Dios libera.'
+                                    },
+                                    'O Deserto e a Lei (Êxodo e Levítico Selecionado) - Foco: A Santidade de Deus.': {
+                                        en: 'The Wilderness and the Law (Exodus and Selected Leviticus) - Focus: The Holiness of God.',
+                                        es: 'El Desierto y la Ley (Éxodo y Levítico Seleccionado) - Enfoque: La Santidad de Dios.'
+                                    },
+                                    'A Terra Prometida e a História (Josué, Juízes, Rute) - Foco: Conquista, fracasso humano e fidelidade divina.': {
+                                        en: 'The Promised Land and History (Joshua, Judges, Ruth) - Focus: Conquest, human failure, and divine faithfulness.',
+                                        es: 'La Tierra Prometida y la Historia (Josué, Jueces, Rut) - Enfoque: Conquista, fracaso humano y fidelidad divina.'
+                                    },
+                                    'Reis e Profetas (Samuel, Davi e Isaías) - Foco: O coração de Deus e a promessa do Messias.': {
+                                        en: 'Kings and Prophets (Samuel, David, and Isaiah) - Focus: The heart of God and the promise of the Messiah.',
+                                        es: 'Reyes y Profetas (Samuel, David e Isaías) - Enfoque: El corazón de Dios y la promesa del Mesías.'
+                                    },
+                                    'Retorno aos Evangelhos (João e Revelação) - Foco: Consolidando a visão de Cristo e a Eternidade.': {
+                                        en: 'Return to the Gospels (John and Revelation) - Focus: Consolidating the vision of Christ and Eternity.',
+                                        es: 'Regreso a los Evangelios (Juan y Apocalipsis) - Enfoque: Consolidando la visión de Cristo y la Eternidad.'
+                                    },
+                                    'Aprofundamento e Conclusão (Releituras Chave) - Foco: Fixando o que mais importa nos últimos 3 meses.': {
+                                        en: 'Deepening and Conclusion (Key Re-readings) - Focus: Fixing what matters most in the last 3 months.',
+                                        es: 'Profundización y Conclusión (Relecturas Clave) - Enfoque: Fijando lo que más importa en los últimos 3 meses.'
+                                    }
+                                };
+
+                                const langKey = language === 'es' ? 'es' : 'en';
+                                const translatedDesc = (language === 'pt-BR' || language === 'pt-PT')
+                                    ? descPart
+                                    : (descriptions[descPart.trim()]?.[langKey] || descPart);
+
+                                return `${phases[language] || phasePart}: ${translatedDesc}`;
+                            })}
+                        </Text>
+                        <TouchableOpacity style={styles.readButton} onPress={() => openReading(item.trechosBiblicos)}>
+                            <Ionicons name="book-outline" size={20} color="#fff" />
+                            <Text style={styles.readButtonText}>{t('readExcerpt').replace('(NVI)', '(NVI)')}</Text>
+                        </TouchableOpacity>
                     </View>
                 )}
             </TouchableOpacity>
@@ -80,34 +279,77 @@ export default function ReadingPlanScreen() {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.screenTitle}>Plano de Leitura</Text>
+        <View className="flex-1 bg-white pt-6">
+            <Text style={styles.screenTitle}>{t('readingPlanTitle')}</Text>
             <FlatList
+                ref={flatListRef}
                 data={plans}
-                keyExtractor={item => String(item.id)}
+                keyExtractor={item => item.id}
                 renderItem={renderItem}
-                contentContainerStyle={{ padding: 20 }}
+                contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />}
-                ListEmptyComponent={<Text style={styles.empty}>Nenhum plano cadastrado.</Text>}
+                ListEmptyComponent={<Text style={styles.empty}>{refreshing ? t('loading') : t('noPlanFound')}</Text>}
+                initialNumToRender={10}
             />
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>{currentReadingTitle}</Text>
+                            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+                                <Ionicons name="close" size={24} color="#333" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView contentContainerStyle={{ padding: 20 }}>
+                            {loadingReading ? (
+                                <ActivityIndicator size="large" color="#00A09A" />
+                            ) : (
+                                <Text style={styles.bibleText}>{readingContent}</Text>
+                            )}
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f5f5f5' },
-    screenTitle: { fontSize: 24, fontWeight: 'bold', margin: 20, marginBottom: 10 },
-    card: { backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 12, elevation: 2 },
-    cardRead: { backgroundColor: '#e8f5e9' },
+    screenTitle: { fontSize: 24, fontWeight: 'bold', margin: 20, marginBottom: 10, color: '#00A09A' },
+    card: { backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 12, elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+    cardRead: { backgroundColor: '#f0fdf4' }, // Light green
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    dayText: { fontSize: 12, color: '#666', textTransform: 'uppercase', marginBottom: 4 },
-    title: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+    dayText: { fontSize: 14, color: '#EF5825', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: 4 },
+    title: { fontSize: 16, fontWeight: '600', color: '#333' },
     textRead: { textDecorationLine: 'line-through', color: '#888' },
-    checkbox: { width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: '#ccc', justifyContent: 'center', alignItems: 'center' },
-    checkboxChecked: { backgroundColor: '#4CAF50', borderColor: '#4CAF50' },
-    checkmark: { color: '#fff', fontWeight: 'bold' },
-    content: { marginTop: 16, borderTopWidth: 1, borderTopColor: '#eee', paddingTop: 16 },
+    checkbox: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: '#ddd', justifyContent: 'center', alignItems: 'center' },
+    checkboxChecked: { backgroundColor: '#8BC441', borderColor: '#8BC441' },
+    checkmark: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+    content: { marginTop: 16, borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 16 },
     reflectionLabel: { fontWeight: 'bold', marginBottom: 4, color: '#555' },
-    reflectionText: { color: '#444', lineHeight: 22 },
-    empty: { textAlign: 'center', marginTop: 40, color: '#999' }
+    reflectionText: { color: '#666', lineHeight: 22 },
+    empty: { textAlign: 'center', marginTop: 40, color: '#999' },
+    readButton: {
+        flexDirection: 'row',
+        backgroundColor: '#00A09A',
+        padding: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 15
+    },
+    readButtonText: { color: '#fff', fontWeight: 'bold', marginLeft: 8 },
+    modalContainer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center' },
+    modalContent: { backgroundColor: '#fff', margin: 20, borderRadius: 16, flex: 1, maxHeight: '80%' },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
+    modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#00A09A', flex: 1 },
+    closeButton: { padding: 4 },
+    bibleText: { fontSize: 18, lineHeight: 30, color: '#333' }
 });

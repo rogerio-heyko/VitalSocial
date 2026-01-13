@@ -33,7 +33,7 @@ export default function ForgotPasswordScreen() {
     }
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1 bg-white justify-center px-8 pt-16 pb-16">
             <Text style={styles.title}>Recuperar Senha</Text>
             <Text style={styles.subtitle}>
                 Digite seu e-mail cadastrado para receber o código de redefinição.
@@ -65,8 +65,7 @@ export default function ForgotPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
-    title: { fontSize: 28, fontWeight: 'bold', color: '#333', marginBottom: 10, textAlign: 'center' },
+    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
     subtitle: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 30 },
     label: { fontSize: 16, color: '#444', marginBottom: 8, fontWeight: '600' },
     input: {
