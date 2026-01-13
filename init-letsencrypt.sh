@@ -44,7 +44,9 @@ echo
 
 
 echo "### Starting nginx ..."
-$DC -f docker-compose.prod.yml up --force-recreate -d nginx
+# Nginx fails if upstream (backend) is not up. Use a temporary config without proxy_pass OR start backend too.
+# Easiest: Start backend too so DNS resolves.
+$DC -f docker-compose.prod.yml up --force-recreate -d nginx backend postgres
 echo
 
 echo "### Deleting dummy certificate for $domains ..."
