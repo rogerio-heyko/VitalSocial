@@ -20,9 +20,10 @@ services:
     build: ./backend
     container_name: vital_social_backend
     restart: always
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
+    # Production: Use code within image, do not mount local volume
+    # volumes:
+    #   - ./backend:/app
+    #   - /app/node_modules
     environment:
       DATABASE_URL: postgres://vital_user:vital_password@postgres:5432/vital_db
       PORT: 3000
