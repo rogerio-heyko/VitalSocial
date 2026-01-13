@@ -90,7 +90,6 @@ export default function Routes() {
                             <Stack.Screen name="AdminConfig" component={AdminConfigScreen} options={{ title: 'Configurações' }} />
                             <Stack.Screen name="AdminUsers" component={AdminUsersScreen} options={{ title: 'Gestão de Equipe' }} />
                             <Stack.Screen name="AdminProjects" component={AdminProjectsScreen} options={{ title: 'Projetos' }} />
-                            <Stack.Screen name="AdminProjects" component={AdminProjectsScreen} options={{ title: 'Projetos' }} />
                             <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} options={{ title: 'Detalhes' }} />
 
                             {/* Professor Flow */}

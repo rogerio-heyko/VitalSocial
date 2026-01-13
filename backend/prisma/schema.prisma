@@ -186,6 +186,12 @@ model Doacao {
   moeda       String   // BRL, ETH, BTC, USDT
   status      String   @default("PENDENTE") // PENDENTE, CONFIRMADO
   txId        String?  // Hash da transação ou ID Pix
+  
+  // Crypto Details
+  carteiraDoador      String?
+  taxaApp             Decimal?  // 5%
+  valorLiquidoProjeto Decimal?  // 95%
+  
   criadoEm    DateTime @default(now())
 }
 

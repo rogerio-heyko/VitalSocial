@@ -6,6 +6,7 @@ const donationRoutes = Router();
 const controller = new DonationController();
 
 donationRoutes.post('/pix', authMiddleware, controller.createPixDonation);
+donationRoutes.post('/crypto', authMiddleware, controller.createCryptoDonation);
 donationRoutes.get('/crypto', authMiddleware, controller.getCryptoWallets);
 donationRoutes.get('/minhas', authMiddleware, controller.getMyDonations);
 

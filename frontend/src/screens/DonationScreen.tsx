@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, FlatList, Linking } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import * as Clipboard from 'expo-clipboard';
 import api from '../services/api';
@@ -28,7 +28,9 @@ export default function DonationScreen() {
 
     // Crypto State
     const [wallets, setWallets] = useState<any>(null);
-    const [selectedCoin, setSelectedCoin] = useState('BTC');
+    const [selectedCoin, setSelectedCoin] = useState('USDT'); // Default USDT
+    const [carteiraDoador, setCarteiraDoador] = useState('');
+    const [donatedData, setDonatedData] = useState<any>(null);
 
     useEffect(() => {
         loadProjects();
@@ -78,6 +80,26 @@ export default function DonationScreen() {
             setQrInstructions(res.data.qrCodeInstructions);
         } catch (error) {
             Alert.alert('Erro', 'Falha ao gerar PIX');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const confirmarCripto = async () => {
+        if (!valor) return Alert.alert('Atenção', 'Digite um valor');
+        if (!carteiraDoador) return Alert.alert('Atenção', 'Informe sua carteira de origem');
+
+        setLoading(true);
+        try {
+            const body = {
+                valor: parseFloat(valor.replace(',', '.')),
+                projetoId: selectedProject?.id,
+                carteiraDoador
+            };
+            const res = await api.post('/doacoes/crypto', body);
+            setDonatedData(res.data);
+        } catch (error: any) {
+            Alert.alert('Erro', error.response?.data?.message || 'Falha ao iniciar doação cripto');
         } finally {
             setLoading(false);
         }
@@ -153,31 +175,66 @@ export default function DonationScreen() {
                 </View>
             ) : (
                 <View style={styles.content}>
-                    <Text style={styles.label}>{t('selectCoin')}</Text>
-                    <View style={styles.coinSelector}>
-                        {[
-                            { code: 'BTC', label: 'BTC (Bitcoin)' },
-                            { code: 'ETH', label: 'ETH (Ethereum)' },
-                            { code: 'USDT', label: 'USDT (Polygon)' }
-                        ].map(coin => (
-                            <TouchableOpacity
-                                key={coin.code}
-                                style={[styles.coinButton, selectedCoin === coin.code && styles.activeCoin]}
-                                onPress={() => setSelectedCoin(coin.code)}
-                            >
-                                <Text style={[styles.coinText, selectedCoin === coin.code && styles.activeCoinText]}>{coin.label}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    <Text style={styles.label}>Valor (USDT - Polygon)</Text>
+                    <TextInput
+                        style={styles.input}
+                        keyboardType="numeric"
+                        placeholder="0.00"
+                        value={valor}
+                        onChangeText={setValor}
+                    />
 
-                    {wallets && (
-                        <View style={styles.walletContainer}>
-                            <Text style={styles.walletLabel}>{t('walletAddress')} ({selectedCoin}):</Text>
-                            <View style={styles.walletBox}>
-                                <Text style={styles.walletAddress}>{wallets[selectedCoin]}</Text>
+                    {valor && !isNaN(parseFloat(valor.replace(',', '.'))) && (
+                        <View className="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                            <Text className="font-bold text-gray-700 mb-2">Resumo da Partilha:</Text>
+                            <View className="flex-row justify-between mb-1">
+                                <Text className="text-gray-600">Projeto (95%):</Text>
+                                <Text className="font-bold text-green-600">{(parseFloat(valor.replace(',', '.')) * 0.95).toFixed(2)} USDT</Text>
                             </View>
-                            <TouchableOpacity style={styles.copyButton} onPress={() => copiarCodigo(wallets[selectedCoin])}>
-                                <Text style={styles.copyButtonText}>{t('copyAddress')}</Text>
+                            <View className="flex-row justify-between">
+                                <Text className="text-gray-600">Taxa VitalSocial (5%):</Text>
+                                <Text className="font-bold text-orange-600">{(parseFloat(valor.replace(',', '.')) * 0.05).toFixed(2)} USDT</Text>
+                            </View>
+                        </View>
+                    )}
+
+                    <Text style={styles.label}>Sua Carteira de Origem</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="0x..."
+                        value={carteiraDoador}
+                        onChangeText={setCarteiraDoador}
+                        autoCapitalize="none"
+                    />
+
+                    {!donatedData ? (
+                        <TouchableOpacity style={styles.button} onPress={confirmarCripto} disabled={loading}>
+                            {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Confirmar e Gerar Link</Text>}
+                        </TouchableOpacity>
+                    ) : (
+                        <View style={styles.resultContainer}>
+                            <Text style={styles.successTitle}>Doação Iniciada!</Text>
+                            <Text style={styles.instructions}>Envie o valor total para a carteira do projeto abaixo. O contrato inteligente fará a divisão automática.</Text>
+
+                            <View className="bg-gray-100 p-4 rounded-lg w-full mb-4">
+                                <Text className="text-xs text-gray-500 text-center mb-1">Endereço de Destino (Polygon)</Text>
+                                <Text className="font-mono text-center font-bold text-gray-800 text-xs mb-3">{donatedData.wallets.destination}</Text>
+                                <TouchableOpacity style={styles.copyButton} onPress={() => copiarCodigo(donatedData.wallets.destination)}>
+                                    <Text style={styles.copyButtonText}>Copiar Endereço</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {donatedData.deepLink && (
+                                <TouchableOpacity
+                                    className="bg-purple-600 p-4 rounded-lg w-full items-center mb-4"
+                                    onPress={() => Linking.openURL(donatedData.deepLink).catch(() => Alert.alert('Erro', 'Não foi possível abrir o app de carteira.'))}
+                                >
+                                    <Text className="text-white font-bold text-lg">Abrir Carteira Agora</Text>
+                                </TouchableOpacity>
+                            )}
+
+                            <TouchableOpacity style={styles.newButton} onPress={() => setDonatedData(null)}>
+                                <Text style={styles.newButtonText}>Nova Doação</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -226,6 +283,7 @@ const styles = StyleSheet.create({
     instructions: { textAlign: 'center', marginVertical: 15, color: colors.textLight },
     copyButton: { backgroundColor: colors.primary, padding: 12, borderRadius: 8, width: '100%', alignItems: 'center', marginTop: 10 },
     copyButtonText: { color: colors.white, fontWeight: 'bold' },
+    successTitle: { fontSize: 20, fontWeight: 'bold', color: colors.success, marginBottom: 10, textAlign: 'center' },
     newButton: { marginTop: 15 },
     newButtonText: { color: colors.textLight },
     coinSelector: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
