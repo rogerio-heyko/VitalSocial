@@ -34,8 +34,14 @@ export class AuthController {
             },
         });
 
-        // Envia e-mail de verificação (sem await para não bloquear o response)
-        EmailService.sendVerificationEmail(email, tokenVerificacao);
+        // Envia e-mail de verificação (com await para garantir envio)
+        try {
+            await EmailService.sendVerificationEmail(email, tokenVerificacao);
+        } catch (error) {
+            console.error('Erro ao enviar email de verificacao:', error);
+            // Opcional: Poderíamos deletar o usuário aqui se o email falhar, 
+            // mas por segurança mantemos e o usuário pode tentar re-enviar depois (feature futura)
+        }
 
         // Remove senha e tokens do retorno
         const { senhaHash: _, tokenVerificacao: __, ...usuarioSemSenha } = usuario;
