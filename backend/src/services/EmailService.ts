@@ -10,19 +10,34 @@ class EmailService {
 
     private async createClient() {
         try {
-            const account = await nodemailer.createTestAccount();
+            // Check if Production SMTP is configured
+            if (process.env.SMTP_HOST) {
+                this.client = nodemailer.createTransport({
+                    host: process.env.SMTP_HOST,
+                    port: Number(process.env.SMTP_PORT) || 587,
+                    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+                    auth: {
+                        user: process.env.SMTP_USER,
+                        pass: process.env.SMTP_PASS,
+                    },
+                });
+                console.log('📧 [EmailService] Cliente SMTP de Produção iniciado!');
+            } else {
+                // Fallback to Development (Ethereal)
+                console.log('⚠️ [EmailService] SMTP não configurado. Usando modo DEV (Ethereal).');
+                const account = await nodemailer.createTestAccount();
 
-            this.client = nodemailer.createTransport({
-                host: account.smtp.host,
-                port: account.smtp.port,
-                secure: account.smtp.secure,
-                auth: {
-                    user: account.user,
-                    pass: account.pass,
-                },
-            });
-
-            console.log('📧 [EmailService] Cliente Ethereal iniciado!');
+                this.client = nodemailer.createTransport({
+                    host: account.smtp.host,
+                    port: account.smtp.port,
+                    secure: account.smtp.secure,
+                    auth: {
+                        user: account.user,
+                        pass: account.pass,
+                    },
+                });
+                console.log('📧 [EmailService] Cliente Ethereal (Teste) iniciado!');
+            }
         } catch (err) {
             console.error('❌ [EmailService] Erro ao criar cliente de e-mail:', err);
         }

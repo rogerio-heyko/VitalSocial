@@ -35,32 +35,46 @@ export default function RegisterScreen({ navigation }: any) {
     return (
         <View className="flex-1 bg-white justify-center px-8 pt-16 pb-16">
             <Text style={styles.title}>Crie sua conta</Text>
+
+            <Text style={styles.label}>Nome Completo</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Nome"
+                placeholder="Ex: João da Silva"
+                placeholderTextColor="#999"
                 value={nome}
                 onChangeText={setNome}
             />
+
+            <Text style={styles.label}>E-mail</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder="Ex: joao@email.com"
+                placeholderTextColor="#999"
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
+                keyboardType="email-address"
             />
+
+            <Text style={styles.label}>Senha</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Senha"
+                placeholder="Mínimo 6 caracteres"
+                placeholderTextColor="#999"
                 value={senha}
                 onChangeText={setSenha}
                 secureTextEntry
             />
-            <Button title={loading ? "Criando..." : "Cadastrar"} onPress={handleRegister} />
+
+            <View style={{ marginTop: 20 }}>
+                <Button title={loading ? "Criando..." : "Cadastrar"} onPress={handleRegister} color="#00A09A" />
+            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-    input: { borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 5 },
+    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 30, textAlign: 'center', color: '#00A09A' },
+    label: { fontSize: 16, fontWeight: '600', marginBottom: 5, color: '#333' },
+    input: { borderWidth: 1, borderColor: '#ccc', padding: 12, marginBottom: 15, borderRadius: 8, fontSize: 16, color: '#333' },
 });
