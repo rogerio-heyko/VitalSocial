@@ -60,6 +60,7 @@ model Usuario {
 
   inscricoes         Inscricao[]
   atividadesMinistradas Atividade[] // Professor
+  turmasResponsavel  Turma[]       // Professor de Turma
   leiturasConcluidas LeituraUsuario[]
   doacoes            Doacao[]
   postsForum         ForumPost[]
