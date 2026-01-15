@@ -53,8 +53,10 @@ class EmailService {
             throw new Error('Serviço de e-mail indisponível.');
         }
 
+        const fromAddress = process.env.SMTP_FROM || 'Vital.Social <noreply@vitalsocial.com>';
+
         const message = await this.client.sendMail({
-            from: 'Vital.Social <rps.sucesso@gmail.com>', // E-mail verificado na Brevo
+            from: fromAddress,
             to,
             subject: 'Confirme seu cadastro - Vital.Social',
             text: `Olá! Seu código de verificação é: ${token}`,
@@ -77,8 +79,10 @@ class EmailService {
             await this.createClient();
         }
 
+        const fromAddress = process.env.SMTP_FROM || 'Vital.Social <noreply@vitalsocial.com>';
+
         const message = await this.client!.sendMail({
-            from: 'Vital.Social <rps.sucesso@gmail.com>',
+            from: fromAddress,
             to,
             subject: 'Recuperação de Senha - Vital.Social',
             text: `Seu código de recuperação é: ${token}`,
