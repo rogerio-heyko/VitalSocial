@@ -34,14 +34,11 @@ export class AuthController {
             },
         });
 
-        // Envia e-mail de verificação (com await para garantir envio)
-        try {
-            await EmailService.sendVerificationEmail(email, tokenVerificacao);
-        } catch (error) {
-            console.error('Erro ao enviar email de verificacao:', error);
-            // Opcional: Poderíamos deletar o usuário aqui se o email falhar, 
-            // mas por segurança mantemos e o usuário pode tentar re-enviar depois (feature futura)
-        }
+        // Envia e-mail de verificação em background (sem await)
+        // Isso evita que o App trave se o SMTP estiver lento ou bloqueado (caso da DigitalOcean)
+        EmailService.sendVerificationEmail(email, tokenVerificacao).catch(err => {
+            console.error('Erro (Background) ao enviar email:', err);
+        });
 
         // Remove senha e tokens do retorno
         const { senhaHash: _, tokenVerificacao: __, ...usuarioSemSenha } = usuario;
