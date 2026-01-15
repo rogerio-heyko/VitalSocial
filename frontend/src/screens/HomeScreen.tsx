@@ -105,7 +105,7 @@ export default function HomeScreen({ navigation }: any) {
 
                         {nextReading
                             ? `${t('day')} ${nextReading.dia}: ${translateBibleRef(nextReading.trechosBiblicos, language)}`
-                            : `${t('loading')}...`
+                            : (feed.length >= 0 && !refreshing) ? t('noPlanFound') : `${t('loading')}...`
                         }
                     </Text>
                     <Text style={styles.readingSub}>{t('tapToRead')}</Text>

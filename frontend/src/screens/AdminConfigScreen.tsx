@@ -36,7 +36,7 @@ export default function AdminConfigScreen() {
                 onPress={() => navigation.navigate('AdminProjects')}
             >
                 <Text style={styles.cardTitle}>{t('socialProjects')}</Text>
-                <Text style={styles.cardDesc}>{t('manageProjects')}</Text>
+                <Text style={styles.cardDesc}>Gerenciar Projetos, Atividades e Turmas</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
