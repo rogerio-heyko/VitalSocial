@@ -54,7 +54,7 @@ class EmailService {
         }
 
         const message = await this.client.sendMail({
-            from: 'Vital.Social <noreply@vitalsocial.com>',
+            from: 'Vital.Social <rps.sucesso@gmail.com>', // E-mail verificado na Brevo
             to,
             subject: 'Confirme seu cadastro - Vital.Social',
             text: `Olá! Seu código de verificação é: ${token}`,
@@ -78,7 +78,7 @@ class EmailService {
         }
 
         const message = await this.client!.sendMail({
-            from: 'Vital.Social <noreply@vitalsocial.com>',
+            from: 'Vital.Social <rps.sucesso@gmail.com>',
             to,
             subject: 'Recuperação de Senha - Vital.Social',
             text: `Seu código de recuperação é: ${token}`,
