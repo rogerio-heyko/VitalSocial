@@ -25,6 +25,30 @@ export class ProfileController {
         return res.json(usuarioSemSenha);
     }
 
+    async atualizarUsuario(req: Request, res: Response) {
+        const { id } = req.user;
+        const { nome, senha } = req.body;
+
+        const data: any = {};
+        if (nome) data.nome = nome;
+        if (senha) {
+            const { hash } = await import('bcryptjs'); // Dynamic import to avoid top-level if not used
+            data.senhaHash = await hash(senha, 8);
+        }
+
+        if (Object.keys(data).length === 0) {
+            throw new AppError('Nenhum dado para atualizar.');
+        }
+
+        const usuario = await prisma.usuario.update({
+            where: { id },
+            data,
+        });
+
+        const { senhaHash: _, ...usuarioSemSenha } = usuario;
+        return res.json(usuarioSemSenha);
+    }
+
     async atualizarDoador(req: Request, res: Response) {
         const { id } = req.user;
         const { valorMensal, diaVencimento } = req.body;

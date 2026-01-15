@@ -4,7 +4,7 @@ import { AppError } from '../utils/AppError';
 
 export class ClassReportController {
     async create(req: Request, res: Response) {
-        const { atividadeId, dataAula, descricao, presencas } = req.body;
+        const { atividadeId, turmaId, dataAula, descricao, presencas } = req.body;
         const foto = req.file;
 
         if (!atividadeId || !dataAula || !descricao) {
@@ -20,14 +20,17 @@ export class ClassReportController {
             fotoUrl = foto.filename;
         }
 
+        const data: any = {
+            atividadeId,
+            dataAula: new Date(dataAula),
+            descricao,
+            fotoUrl
+        };
+        if (turmaId) data.turmaId = turmaId;
+
         // 1. Create RelatorioAula
         const relatorio = await prisma.relatorioAula.create({
-            data: {
-                atividadeId,
-                dataAula: new Date(dataAula),
-                descricao,
-                fotoUrl
-            }
+            data
         });
 
         // 2. Process Presencas
@@ -73,30 +76,34 @@ export class ClassReportController {
                 atividade: {
                     select: {
                         titulo: true,
+                        projeto: { select: { nome: true } }, // Include Project Name if possible
                         professor: {
                             select: {
                                 nome: true,
-                                cargo: true
+                                cargo: true,
+                                fotoUrl: true // Assuming user has photo?
                             }
-                        },
-                        // We might want to know the project name too
-                        // But schema relation is: Atividade -> Professor. Not directly Project.
-                        // Wait, Atividade doesn't strictly link to Project in current schema? 
-                        // Let's check schema details.
+                        }
                     }
+                },
+                turma: {
+                    select: { nome: true }
                 }
             }
         });
 
-        // Map to friendlier format if needed
+        // Map to friendlier format
         const feed = reports.map(r => ({
             id: r.id,
-            titulo: r.atividade.titulo,
+            // Title logic: "Project Name - Activity Name" or just "Activity Name"
+            // With Turma: "Activity Name - Turma Name"
+            titulo: r.turma ? `${r.atividade.titulo} - ${r.turma.nome}` : r.atividade.titulo,
+            projeto: r.atividade.projeto?.nome || "Comunidade",
             professor: r.atividade.professor.nome,
+            professorCargo: r.atividade.professor.cargo,
             data: r.dataAula,
             descricao: r.descricao,
-            fotoUrl: r.fotoUrl ? `http://10.0.2.2:3000/uploads/${r.fotoUrl}` : null, // Assuming Android Emulator IP for MVP
-            // In prod this should be env var BASE_URL
+            fotoUrl: r.fotoUrl ? `http://10.0.2.2:3000/uploads/${r.fotoUrl}` : null,
         }));
 
         return res.json(feed);

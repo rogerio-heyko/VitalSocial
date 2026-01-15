@@ -13,7 +13,7 @@ interface Projeto {
     walletUsdt?: string;
 }
 
-export default function AdminProjectsScreen() {
+export default function AdminProjectsScreen({ navigation }: any) {
     const [projetos, setProjetos] = useState<Projeto[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [editingProject, setEditingProject] = useState<Projeto | null>(null);
@@ -23,8 +23,6 @@ export default function AdminProjectsScreen() {
     const [descricao, setDescricao] = useState('');
     const [instituicao, setInstituicao] = useState('');
     const [chavePix, setChavePix] = useState('');
-    const [walletBtc, setWalletBtc] = useState('');
-    const [walletEth, setWalletEth] = useState('');
     const [walletUsdt, setWalletUsdt] = useState('');
 
     async function loadProjects() {
@@ -49,8 +47,6 @@ export default function AdminProjectsScreen() {
             setDescricao(projeto.descricao || '');
             setInstituicao(projeto.instituicao || '');
             setChavePix(projeto.chavePix || '');
-            setWalletBtc(projeto.walletBtc || '');
-            setWalletEth(projeto.walletEth || '');
             setWalletUsdt(projeto.walletUsdt || '');
         } else {
             setEditingProject(null);
@@ -58,8 +54,6 @@ export default function AdminProjectsScreen() {
             setDescricao('');
             setInstituicao('');
             setChavePix('');
-            setWalletBtc('');
-            setWalletEth('');
             setWalletUsdt('');
         }
         setModalVisible(true);
@@ -67,7 +61,7 @@ export default function AdminProjectsScreen() {
 
     async function handleSave() {
         try {
-            const data = { nome, descricao, instituicao, chavePix, walletBtc, walletEth, walletUsdt };
+            const data = { nome, descricao, instituicao, chavePix, walletUsdt };
             if (editingProject) {
                 await api.put(`/admin/projects/${editingProject.id}`, data);
                 Alert.alert('Sucesso', 'Projeto atualizado!');
@@ -106,6 +100,13 @@ export default function AdminProjectsScreen() {
                 <Text style={styles.projectName}>{item.nome}</Text>
                 {item.instituicao && <Text style={{ fontSize: 12, color: '#4a90e2', fontWeight: 'bold' }}>{item.instituicao}</Text>}
                 <Text numberOfLines={1} style={styles.projectDesc}>{item.descricao}</Text>
+
+                <TouchableOpacity
+                    style={styles.activityBtn}
+                    onPress={() => navigation.navigate('AdminProjectActivities', { projectId: item.id, projectName: item.nome })}
+                >
+                    <Text style={styles.activityBtnText}>Gerenciar Atividades</Text>
+                </TouchableOpacity>
             </View>
             <View style={styles.actions}>
                 <TouchableOpacity onPress={() => openModal(item)} style={styles.editBtn}>
@@ -148,11 +149,7 @@ export default function AdminProjectsScreen() {
                         <Text style={styles.label}>Chave PIX</Text>
                         <TextInput style={styles.input} value={chavePix} onChangeText={setChavePix} placeholder="CPF, Email, Aleatória..." />
 
-                        <Text style={styles.label}>Wallet Bitcoin (Rede BTC)</Text>
-                        <TextInput style={styles.input} value={walletBtc} onChangeText={setWalletBtc} placeholder="Endereço BTC" />
 
-                        <Text style={styles.label}>Wallet Ethereum (Rede ETH)</Text>
-                        <TextInput style={styles.input} value={walletEth} onChangeText={setWalletEth} placeholder="Endereço ETH" />
 
                         <Text style={styles.label}>Wallet USDT (Rede Polygon)</Text>
                         <TextInput style={styles.input} value={walletUsdt} onChangeText={setWalletUsdt} placeholder="Endereço USDT (Polygon)" />
@@ -189,5 +186,7 @@ const styles = StyleSheet.create({
     saveButton: { backgroundColor: '#5cb85c', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 30 },
     saveButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 18 },
     cancelButton: { marginTop: 15, alignItems: 'center' },
-    cancelButtonText: { color: '#888', fontSize: 16 }
+    cancelButtonText: { color: '#888', fontSize: 16 },
+    activityBtn: { marginTop: 8, backgroundColor: '#e1f5fe', padding: 6, borderRadius: 4, alignSelf: 'flex-start' },
+    activityBtnText: { color: '#0288d1', fontSize: 12, fontWeight: 'bold' }
 });

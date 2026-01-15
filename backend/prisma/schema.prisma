@@ -106,8 +106,27 @@ model Atividade {
   professorResponsavelId String
   professor            Usuario       @relation(fields: [professorResponsavelId], references: [id])
   
-  inscricoes           Inscricao[]
+  projetoId            String?       // Opcional por compatibilidade, mas idealmente obrigatório
+  projeto              Projeto?      @relation(fields: [projetoId], references: [id])
+
+  turmas               Turma[]
+  inscricoes           Inscricao[]   // Geral (sem turma definida ainda) ou histórico
   postsForum           ForumPost[]
+  relatorios           RelatorioAula[]
+}
+
+model Turma {
+  id                   String        @id @default(uuid())
+  nome                 String        // Ex: "Turma A - Matutino"
+  diasHorarios         String?       // Ex: "Seg/Qua 10:00"
+  
+  atividadeId          String
+  atividade            Atividade     @relation(fields: [atividadeId], references: [id])
+  
+  professorResponsavelId String
+  professor            Usuario       @relation(fields: [professorResponsavelId], references: [id])
+
+  inscricoes           Inscricao[]
   relatorios           RelatorioAula[]
 }
 
@@ -115,6 +134,8 @@ model Inscricao {
   id          String    @id @default(uuid())
   alunoId     String
   atividadeId String
+  turmaId     String? // Opcional, pois pode se inscrever na atividade geral antes de ser alocado
+  turma       Turma?    @relation(fields: [turmaId], references: [id])
   dataInscricao DateTime @default(now())
 
   aluno       Usuario   @relation(fields: [alunoId], references: [id])
@@ -160,6 +181,8 @@ model RelatorioAula {
   id          String   @id @default(uuid())
   atividadeId String
   atividade   Atividade @relation(fields: [atividadeId], references: [id])
+  turmaId     String?
+  turma       Turma?    @relation(fields: [turmaId], references: [id])
   dataAula    DateTime
   descricao   String
   fotoUrl     String?
@@ -211,6 +234,7 @@ model Projeto {
   criadoEm    DateTime @default(now())
   
   doacoes     Doacao[]
+  atividades  Atividade[]
 }
 
 model ForumPost {

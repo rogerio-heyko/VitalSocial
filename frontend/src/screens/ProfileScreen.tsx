@@ -6,12 +6,14 @@ import api from '../services/api';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
     const { user, signOut } = useAuth();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [name, setName] = useState(user?.nome || '');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const { language, setLanguage, t } = useLanguage();
@@ -20,8 +22,14 @@ export default function ProfileScreen() {
         if (loading) return;
         setLoading(true);
         try {
-            Alert.alert('Aviso', 'Funcionalidade de editar dados básicos (Nome/Senha) será implementada na próxima fase de Backend. Por enquanto, gerencie seus detalhes de Benficiário/Doador.');
+            await api.put('/profile', {
+                nome: name,
+                senha: password || undefined // Only send if not empty
+            });
+            Alert.alert(t('success'), t('profileUpdated'));
+            setPassword(''); // Clear password field for safety
         } catch (error) {
+            console.error(error);
             Alert.alert('Erro', 'Falha ao atualizar perfil.');
         } finally {
             setLoading(false);
@@ -79,13 +87,18 @@ export default function ProfileScreen() {
                 />
 
                 <Text style={styles.label}>{t('newPassword')}</Text>
-                <TextInput
-                    style={styles.input}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    placeholder={t('leaveBlank')}
-                />
+                <View style={styles.passwordContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                        placeholder={t('leaveBlank')}
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                        <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color="#666" />
+                    </TouchableOpacity>
+                </View>
 
                 <TouchableOpacity className="bg-[#8BC441] p-4 rounded-lg items-center mt-8" onPress={handleSave} disabled={loading}>
                     {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveButtonText}>{t('saveChanges')}</Text>}
@@ -136,5 +149,8 @@ const styles = StyleSheet.create({
     languageOptions: { flexDirection: 'row' },
     langButton: { padding: 8, borderRadius: 8, marginLeft: 8, backgroundColor: '#f0f0f0' },
     langButtonActive: { backgroundColor: '#e0f7fa', borderWidth: 1, borderColor: '#00A09A' },
-    langText: { fontSize: 20 }
+    langText: { fontSize: 20 },
+    passwordContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#ddd', borderRadius: 8, marginBottom: 16, backgroundColor: '#fafafa' },
+    passwordInput: { flex: 1, padding: 12, fontSize: 16 },
+    eyeIcon: { padding: 10 }
 });

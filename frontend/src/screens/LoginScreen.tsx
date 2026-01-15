@@ -4,12 +4,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../theme/colors';
 import { useLanguage } from '../contexts/LanguageContext';
 
+import { Ionicons } from '@expo/vector-icons';
+
 export default function LoginScreen({ navigation }: any) {
     const { t } = useLanguage();
     const { signIn } = useAuth();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
     async function handleLogin() {
@@ -47,14 +50,19 @@ export default function LoginScreen({ navigation }: any) {
                 autoCapitalize="none"
                 keyboardType="email-address"
             />
-            <TextInput
-                style={styles.input}
-                placeholder={t('password')}
-                placeholderTextColor={colors.textLight}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
+            <View style={styles.passwordContainer}>
+                <TextInput
+                    style={styles.passwordInput}
+                    placeholder={t('password')}
+                    placeholderTextColor={colors.textLight}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                    <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color={colors.textLight} />
+                </TouchableOpacity>
+            </View>
 
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
                 {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.buttonText}>{t('login')}</Text>}
@@ -76,6 +84,9 @@ const styles = StyleSheet.create({
     logo: { width: '100%', height: 120, marginBottom: 10 },
     tagline: { fontSize: 14, color: colors.secondary, textAlign: 'center', marginBottom: 30, fontStyle: 'italic' },
     input: { width: '100%', height: 50, borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 15, marginBottom: 15, backgroundColor: colors.white, fontSize: 16, color: colors.text },
+    passwordContainer: { width: '100%', flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 15, backgroundColor: colors.white },
+    passwordInput: { flex: 1, height: 50, paddingHorizontal: 15, fontSize: 16, color: colors.text },
+    eyeIcon: { padding: 10 },
     loginButton: { width: '100%', height: 50, backgroundColor: colors.primary, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 15, elevation: 2 },
     registerButton: { width: '100%', height: 50, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.primary, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
     buttonText: { color: colors.white, fontSize: 18, fontWeight: 'bold' },

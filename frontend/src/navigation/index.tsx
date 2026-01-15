@@ -41,6 +41,8 @@ export type RootStackParamList = {
     AdminConfig: undefined;
     AdminUsers: undefined;
     AdminProjects: undefined;
+    AdminProjectActivities: { projectId: string; projectName: string };
+    ManageTurmas: { activityId: string; activityTitle: string };
     ActivityDetails: { activityId: string };
     ProfessorDashboard: undefined;
     ClassReport: { atividadeId: string; titulo: string };
@@ -90,6 +92,8 @@ export default function Routes() {
                             <Stack.Screen name="AdminConfig" component={AdminConfigScreen} options={{ title: 'Configurações' }} />
                             <Stack.Screen name="AdminUsers" component={AdminUsersScreen} options={{ title: 'Gestão de Equipe' }} />
                             <Stack.Screen name="AdminProjects" component={AdminProjectsScreen} options={{ title: 'Projetos' }} />
+                            <Stack.Screen name="AdminProjectActivities" component={require('../screens/AdminProjectActivitiesScreen').default} options={{ title: 'Atividades do Projeto' }} />
+                            <Stack.Screen name="ManageTurmas" component={require('../screens/ManageTurmasScreen').default} options={{ title: 'Turmas' }} />
                             <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} options={{ title: 'Detalhes' }} />
 
                             {/* Professor Flow */}

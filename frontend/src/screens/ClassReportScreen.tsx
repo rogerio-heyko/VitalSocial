@@ -20,7 +20,7 @@ interface Inscricao {
 export default function ClassReportScreen() {
     const route = useRoute<ClassReportRouteProp>();
     const navigation = useNavigation();
-    const { atividadeId, titulo } = route.params;
+    const { atividadeId, turmaId, titulo } = route.params as any; // Cast to any to accept turmaId
 
     const [description, setDescription] = useState('');
     const [image, setImage] = useState<string | null>(null);
@@ -34,13 +34,27 @@ export default function ClassReportScreen() {
 
     async function loadStudents() {
         try {
-            // Fetch inscriptions for this activity
-            // Assuming endpoint exists or we filter generic one
-            const response = await api.get(`/atividades/${atividadeId}/inscritos`);
-            const data = response.data.map((item: any) => ({
-                ...item,
-                presente: true // Default to present
-            }));
+            let data: Inscricao[] = [];
+
+            if (turmaId) {
+                // Fetch Turma Details which includes inscricoes
+                const response = await api.get(`/turmas/${turmaId}`);
+                // response.data.inscricoes -> list
+                if (response.data.inscricoes) {
+                    data = response.data.inscricoes.map((item: any) => ({
+                        ...item,
+                        presente: true
+                    }));
+                }
+            } else {
+                // Legacy Fallback for direct Activity
+                const response = await api.get(`/atividades/${atividadeId}/inscritos`);
+                data = response.data.map((item: any) => ({
+                    ...item,
+                    presente: true
+                }));
+            }
+
             setStudents(data);
         } catch (error) {
             console.log(error);
@@ -95,6 +109,7 @@ export default function ClassReportScreen() {
         try {
             const formData = new FormData();
             formData.append('atividadeId', atividadeId);
+            if (turmaId) formData.append('turmaId', turmaId);
             formData.append('dataAula', new Date().toISOString());
             formData.append('descricao', description);
 

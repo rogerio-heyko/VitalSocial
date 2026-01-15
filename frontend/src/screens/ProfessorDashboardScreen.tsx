@@ -9,28 +9,31 @@ import { RootStackParamList } from '../routes/Routes'; // Ensure this matches ac
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProfessorDashboard'>;
 
-interface Atividade {
+interface Turma {
     id: string;
-    titulo: string;
-    tipo: string;
-    dataHora: string;
+    nome: string;
+    atividadeId: string;
+    atividade: {
+        titulo: string;
+        tipo: string;
+    };
+    _count: { inscricoes: number };
 }
 
 export default function ProfessorDashboardScreen() {
     const navigation = useNavigation<HomeScreenNavigationProp>();
     const { user } = useAuth();
-    const [activities, setActivities] = useState<Atividade[]>([]);
+    const [turmas, setTurmas] = useState<Turma[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        loadActivities();
+        loadMyClasses();
     }, []);
 
-    async function loadActivities() {
+    async function loadMyClasses() {
         try {
-            // Assuming this endpoint returns activities where user is professor
-            const response = await api.get('/atividades/minhas');
-            setActivities(response.data);
+            const response = await api.get('/turmas/minhas');
+            setTurmas(response.data);
         } catch (error) {
             console.log(error);
         } finally {
@@ -38,18 +41,23 @@ export default function ProfessorDashboardScreen() {
         }
     }
 
-    const renderItem = ({ item }: { item: Atividade }) => (
+    const renderItem = ({ item }: { item: Turma }) => (
         <View className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-gray-100 flex-row justify-between items-center">
             <View>
-                <Text className="text-lg font-bold text-gray-800">{item.titulo}</Text>
-                <Text className="text-gray-500">{new Date(item.dataHora).toLocaleDateString()} - {item.tipo}</Text>
+                <Text className="text-lg font-bold text-gray-800">{item.nome}</Text>
+                <Text className="text-gray-500">{item.atividade.titulo} ({item.atividade.tipo})</Text>
+                <Text className="text-gray-400 text-xs mt-1">{item._count?.inscricoes || 0} alunos</Text>
             </View>
             <TouchableOpacity
                 className="bg-teal-600 px-4 py-2 rounded-lg flex-row items-center"
-                onPress={() => navigation.navigate('ClassReport', { atividadeId: item.id, titulo: item.titulo })}
+                onPress={() => navigation.navigate('ClassReport', {
+                    atividadeId: item.atividadeId,
+                    turmaId: item.id,
+                    titulo: `${item.atividade.titulo} - ${item.nome}`
+                } as any)}
             >
-                <Ionicons name="document-text-outline" size={20} color="#fff" />
-                <Text className="text-white font-bold ml-2">Relatório</Text>
+                <Ionicons name="checkbox-outline" size={20} color="#fff" />
+                <Text className="text-white font-bold ml-2">Chamada</Text>
             </TouchableOpacity>
         </View>
     );
@@ -62,10 +70,10 @@ export default function ProfessorDashboardScreen() {
                 <ActivityIndicator size="large" color="#00A09A" />
             ) : (
                 <FlatList
-                    data={activities}
+                    data={turmas}
                     keyExtractor={item => item.id}
                     renderItem={renderItem}
-                    ListEmptyComponent={<Text className="text-gray-400 text-center mt-10">Nenhuma atividade encontrada.</Text>}
+                    ListEmptyComponent={<Text className="text-gray-400 text-center mt-10">Nenhuma turma encontrada.</Text>}
                 />
             )}
         </View>

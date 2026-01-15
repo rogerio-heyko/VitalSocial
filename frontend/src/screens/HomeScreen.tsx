@@ -154,7 +154,7 @@ export default function HomeScreen({ navigation }: any) {
 
             {/* Social Feed Section */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Feed da Comunidade</Text>
+                <Text style={styles.sectionTitle}>Acontecendo Agora</Text>
                 {feed.map(item => (
                     <View key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
                         <View className="p-4 flex-row items-center border-b border-gray-100">
@@ -163,6 +163,7 @@ export default function HomeScreen({ navigation }: any) {
                             </View>
                             <View>
                                 <Text className="font-bold text-gray-900">{item.professor}</Text>
+                                <Text className="text-xs text-teal-600 font-bold">{item.projeto}</Text>
                                 <Text className="text-xs text-gray-500">{new Date(item.data).toLocaleDateString()} • {item.titulo}</Text>
                             </View>
                         </View>

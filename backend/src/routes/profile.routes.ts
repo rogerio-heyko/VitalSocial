@@ -9,6 +9,7 @@ const profileController = new ProfileController();
 profileRoutes.use(authMiddleware);
 
 profileRoutes.get('/me', profileController.meuPerfil);
+profileRoutes.put('/', profileController.atualizarUsuario); // Basic Info (Name, Password)
 profileRoutes.put('/doador', profileController.atualizarDoador);
 profileRoutes.put('/beneficiario', profileController.atualizarBeneficiario);
 

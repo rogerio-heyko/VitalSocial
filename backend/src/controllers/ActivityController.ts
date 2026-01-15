@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export class ActivityController {
     async criar(req: Request, res: Response) {
         const { id } = req.user;
-        const { titulo, tipo, dataHora } = req.body;
+        const { titulo, tipo, dataHora, projetoId, professorResponsavelId } = req.body;
 
         // Verificar se usuário é STAFF ou ADMIN
         const usuario = await prisma.usuario.findUnique({ where: { id } });
@@ -24,13 +24,19 @@ export class ActivityController {
             throw new AppError(`Tipo inválido. Tipos permitidos: ${Object.values(TipoAtividade).join(', ')}`);
         }
 
+        const data: any = {
+            titulo,
+            tipo,
+            dataHora: new Date(dataHora),
+            professorResponsavelId: professorResponsavelId || id,
+        };
+
+        if (projetoId) {
+            data.projetoId = projetoId;
+        }
+
         const atividade = await prisma.atividade.create({
-            data: {
-                titulo,
-                tipo,
-                dataHora: new Date(dataHora),
-                professorResponsavelId: id, // Quem criou assume como responsável inicialmente (pode ser alterado dps se implementarmos)
-            },
+            data
         });
 
         return res.status(201).json(atividade);
@@ -42,6 +48,28 @@ export class ActivityController {
             include: {
                 professor: {
                     select: { nome: true, email: true }
+                },
+                projeto: {
+                    select: { nome: true }
+                },
+                _count: {
+                    select: { inscricoes: true }
+                }
+            },
+            orderBy: { dataHora: 'asc' }
+        });
+
+        return res.json(atividades);
+    }
+
+    async listarPorProjeto(req: Request, res: Response) {
+        const { projetoId } = req.params;
+
+        const atividades = await prisma.atividade.findMany({
+            where: { projetoId },
+            include: {
+                professor: {
+                    select: { nome: true, email: true, id: true }
                 },
                 _count: {
                     select: { inscricoes: true }

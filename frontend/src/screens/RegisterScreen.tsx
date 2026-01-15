@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, Alert } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text, Alert, TouchableOpacity } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function RegisterScreen({ navigation }: any) {
     const [nome, setNome] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const { signUp } = useAuth();
     const [loading, setLoading] = useState(false);
 
@@ -57,14 +59,19 @@ export default function RegisterScreen({ navigation }: any) {
             />
 
             <Text style={styles.label}>Senha</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Mínimo 6 caracteres"
-                placeholderTextColor="#999"
-                value={senha}
-                onChangeText={setSenha}
-                secureTextEntry
-            />
+            <View style={styles.passwordContainer}>
+                <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Mínimo 6 caracteres"
+                    placeholderTextColor="#999"
+                    value={senha}
+                    onChangeText={setSenha}
+                    secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                    <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color="#999" />
+                </TouchableOpacity>
+            </View>
 
             <View style={{ marginTop: 20 }}>
                 <Button title={loading ? "Criando..." : "Cadastrar"} onPress={handleRegister} color="#00A09A" />
@@ -77,4 +84,7 @@ const styles = StyleSheet.create({
     title: { fontSize: 24, fontWeight: 'bold', marginBottom: 30, textAlign: 'center', color: '#00A09A' },
     label: { fontSize: 16, fontWeight: '600', marginBottom: 5, color: '#333' },
     input: { borderWidth: 1, borderColor: '#ccc', padding: 12, marginBottom: 15, borderRadius: 8, fontSize: 16, color: '#333' },
+    passwordContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#ccc', borderRadius: 8, marginBottom: 15 },
+    passwordInput: { flex: 1, padding: 12, fontSize: 16, color: '#333' },
+    eyeIcon: { padding: 10 },
 });

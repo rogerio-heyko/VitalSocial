@@ -18,6 +18,7 @@ import { readingPlanRoutes } from './routes/readingPlan.routes';
 import { adminRoutes } from './routes/admin.routes';
 import { projectRoutes } from './routes/project.routes';
 import { donationRoutes } from './routes/donation.routes';
+import { turmaRoutes } from './routes/turma.routes';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -35,6 +36,7 @@ app.use('/leitura', readingPlanRoutes);
 app.use('/admin', adminRoutes);
 app.use('/doacoes', donationRoutes);
 app.use('/projetos', projectRoutes);
+app.use('/turmas', turmaRoutes);
 
 import { classReportRoutes } from './routes/classReport.routes';
 app.use('/relatorios', classReportRoutes);
