@@ -33,6 +33,7 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
     const [tipo, setTipo] = useState<'AULA' | 'CURSO' | 'EVENTO'>('AULA');
     const [dataHora, setDataHora] = useState(''); // Text "YYYY-MM-DD HH:mm"
     const [professorId, setProfessorId] = useState('');
+    const [scheduleText, setScheduleText] = useState('');
 
     // Selection Modals
     const [showTypeSelect, setShowTypeSelect] = useState(false);
@@ -89,7 +90,7 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
 
         try {
             await api.post('/activities', {
-                titulo,
+                titulo: (tipo === 'AULA' && scheduleText) ? `${titulo} (${scheduleText})` : titulo,
                 tipo,
                 dataHora, // Backend expects ISO or generic date string, let's hope standard JS Date parses it
                 projetoId: projectId,
@@ -163,8 +164,24 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                         <Text>{tipo}</Text>
                     </TouchableOpacity>
 
-                    <Text style={styles.label}>Data e Hora (AAAA-MM-DD HH:MM)</Text>
+                    <Text style={styles.label}>{tipo === 'AULA' ? 'Data de Início (Referência)' : 'Data e Hora'}</Text>
                     <TextInput style={styles.input} value={dataHora} onChangeText={setDataHora} placeholder="2025-01-20 14:00" />
+
+                    {tipo === 'AULA' && (
+                        <>
+                            <Text style={styles.label}>Dias e Horários (Texto)</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Ex: Terças e Quintas às 19h"
+                                onChangeText={(text) => {
+                                    // We will handle this in handleSave by appending to title or just ignoring for now if we can't save it separately.
+                                    // To make it persistent without schema change, let's append to Title if not already there? 
+                                    // Or better: temporary state 'scheduleText'
+                                    setScheduleText(text);
+                                }}
+                            />
+                        </>
+                    )}
 
                     <Text style={styles.label}>Professor Responsável</Text>
                     <TouchableOpacity style={styles.selector} onPress={() => setShowUserSelect(true)}>
