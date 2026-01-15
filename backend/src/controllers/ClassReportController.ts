@@ -80,8 +80,7 @@ export class ClassReportController {
                         professor: {
                             select: {
                                 nome: true,
-                                cargo: true,
-                                fotoUrl: true // Assuming user has photo?
+                                cargo: true
                             }
                         }
                     }
@@ -93,7 +92,7 @@ export class ClassReportController {
         });
 
         // Map to friendlier format
-        const feed = reports.map(r => ({
+        const feed = reports.map((r: any) => ({
             id: r.id,
             // Title logic: "Project Name - Activity Name" or just "Activity Name"
             // With Turma: "Activity Name - Turma Name"
