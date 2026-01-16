@@ -9,7 +9,7 @@ import { RootStackParamList } from '../navigation';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
-    const { user, signOut } = useAuth();
+    const { user, signOut, refreshUser } = useAuth();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [name, setName] = useState(user?.nome || '');
     const [password, setPassword] = useState('');
@@ -28,6 +28,7 @@ export default function ProfileScreen() {
             });
             Alert.alert(t('success'), t('profileUpdated'));
             setPassword(''); // Clear password field for safety
+            await refreshUser(); // Update context immediately
         } catch (error) {
             console.error(error);
             Alert.alert('Erro', 'Falha ao atualizar perfil.');

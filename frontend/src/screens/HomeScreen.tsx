@@ -26,6 +26,7 @@ export default function HomeScreen({ navigation }: any) {
     const [feed, setFeed] = useState<any[]>([]);
     const [myInscriptions, setMyInscriptions] = useState<Inscription[]>([]);
     const [refreshing, setRefreshing] = useState(false);
+    const [loading, setLoading] = useState(true); // Initial load state
     const [nextReading, setNextReading] = useState<any>(null);
 
     async function loadData() {
@@ -48,7 +49,7 @@ export default function HomeScreen({ navigation }: any) {
             const plans = planRes.data;
             let next = null;
             if (Array.isArray(plans) && plans.length > 0) {
-                next = plans.find((p: any) => !p.lido) || plans[plans.length - 1];
+                next = plans.find((p: any) => !p.lido) || plans[plans.length - 1]; // Use last if all read
             }
             setNextReading(next);
         } catch (error) {
@@ -56,6 +57,7 @@ export default function HomeScreen({ navigation }: any) {
             // Silently fail or show simple toast
         } finally {
             setRefreshing(false);
+            setLoading(false);
         }
     }
 
@@ -108,7 +110,7 @@ export default function HomeScreen({ navigation }: any) {
 
                         {nextReading
                             ? `${t('day')} ${nextReading.dia}: ${translateBibleRef(nextReading.trechosBiblicos, language)}`
-                            : (feed.length >= 0 && !refreshing) ? t('noPlanFound') : `${t('loading')}...`
+                            : (!loading && !refreshing) ? t('noPlanFound') : `${t('loading')}...`
                         }
                     </Text>
                     <Text style={styles.readingSub}>{t('tapToRead')}</Text>

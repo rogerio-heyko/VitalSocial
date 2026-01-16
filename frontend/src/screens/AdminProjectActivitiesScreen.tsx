@@ -57,7 +57,26 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
         }
     }
 
-    // ... (omitted)
+    async function loadUsers() {
+        setLoadingUsers(true);
+        try {
+            const response = await api.get('/admin/users');
+            const staff = response.data.filter((u: User) => u.tipo === 'STAFF' || u.tipo === 'ADMIN');
+            setAllUsers(staff);
+        } catch (error) {
+            console.error("Error loading users:", error);
+        } finally {
+            setLoadingUsers(false);
+        }
+    }
+
+    function openModal() {
+        setTitulo('');
+        setTipo('AULA');
+        setDataHora(new Date().toISOString().slice(0, 16).replace('T', ' ')); // "2023-01-01 10:00"
+        setProfessorId('');
+        setModalVisible(true);
+    }
 
     async function handleSave() {
         if (!titulo || !dataHora || !professorId) {
