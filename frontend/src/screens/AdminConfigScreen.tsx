@@ -4,7 +4,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation';
 import { useAuth } from '../contexts/AuthContext';
-
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function AdminConfigScreen() {

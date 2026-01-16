@@ -6,6 +6,7 @@ const API_URL = 'https://api.vital.social';
 
 const api = axios.create({
     baseURL: API_URL,
+    timeout: 10000, // 10 seconds timeout
     // headers: { 'Bypass-Tunnel-Reminder': 'true' } // Não necessário via USB
 });
 

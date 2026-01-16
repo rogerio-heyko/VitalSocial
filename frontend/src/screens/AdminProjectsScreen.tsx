@@ -120,7 +120,7 @@ export default function AdminProjectsScreen({ navigation }: any) {
     );
 
     return (
-        <View className="flex-1 px-8 pt-16 pb-16 bg-gray-100">
+        <View className="flex-1 bg-gray-100" style={{ paddingHorizontal: 32, paddingBottom: 120, paddingTop: 64 }}>
             <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
                 <Text style={styles.addButtonText}>+ Novo Projeto</Text>
             </TouchableOpacity>

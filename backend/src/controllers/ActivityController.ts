@@ -20,8 +20,9 @@ export class ActivityController {
             throw new AppError('Título, tipo e data/hora são obrigatórios.');
         }
 
-        if (!Object.values(TipoAtividade).includes(tipo)) {
-            throw new AppError(`Tipo inválido. Tipos permitidos: ${Object.values(TipoAtividade).join(', ')}`);
+        const tiposValidos = ['AULA', 'CURSO', 'EVENTO'];
+        if (!tiposValidos.includes(tipo)) {
+            throw new AppError(`Tipo inválido. Tipos permitidos: ${tiposValidos.join(', ')}`);
         }
 
         const data: any = {
