@@ -22,7 +22,7 @@ export default function ProfileScreen() {
         if (loading) return;
         setLoading(true);
         try {
-            await api.put('/profile', {
+            await api.put('/perfil', {
                 nome: name,
                 senha: password || undefined // Only send if not empty
             });

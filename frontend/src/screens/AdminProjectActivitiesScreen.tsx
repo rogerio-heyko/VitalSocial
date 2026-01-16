@@ -46,7 +46,7 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
 
     async function loadActivities() {
         try {
-            const response = await api.get(`/activities/projeto/${projectId}`);
+            const response = await api.get(`/atividades/projeto/${projectId}`);
             // Convert strings to nice format if needed, but keeping raw for now
             setActivities(response.data);
         } catch (error) {
@@ -57,30 +57,7 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
         }
     }
 
-    async function loadUsers() {
-        setLoadingUsers(true);
-        try {
-            const response = await api.get('/admin/users');
-            // Allow all users to be professors, or filter by STAFF/ADMIN? 
-            // User request: "Inserir os professores". Usually implies selecting from existing staff.
-            // FILTER: Show STAFF and ADMIN only to keep list clean, or all. 
-            // Let's filter for better UX, defaulting to STAFF+ADMIN.
-            const staff = response.data.filter((u: User) => u.tipo === 'STAFF' || u.tipo === 'ADMIN');
-            setAllUsers(staff);
-        } catch (error) {
-            console.error("Error loading users:", error);
-        } finally {
-            setLoadingUsers(false);
-        }
-    }
-
-    function openModal() {
-        setTitulo('');
-        setTipo('AULA');
-        setDataHora(new Date().toISOString().slice(0, 16).replace('T', ' ')); // "2023-01-01 10:00"
-        setProfessorId('');
-        setModalVisible(true);
-    }
+    // ... (omitted)
 
     async function handleSave() {
         if (!titulo || !dataHora || !professorId) {
@@ -89,7 +66,7 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
         }
 
         try {
-            await api.post('/activities', {
+            await api.post('/atividades', {
                 titulo: (tipo === 'AULA' && scheduleText) ? `${titulo} (${scheduleText})` : titulo,
                 tipo,
                 dataHora, // Backend expects ISO or generic date string, let's hope standard JS Date parses it
@@ -104,6 +81,14 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
             Alert.alert("Erro", "Falha ao criar atividade.");
         }
     }
+
+    // ... styles update
+
+    const styles = StyleSheet.create({
+        // ...
+        input: { borderWidth: 1, borderColor: '#ddd', padding: 12, borderRadius: 8, backgroundColor: '#f9f9f9', fontSize: 16, color: '#333' },
+        // ...
+    });
 
     const getProfessorName = () => {
         const p = allUsers.find(u => u.id === professorId);
@@ -250,7 +235,7 @@ const styles = StyleSheet.create({
     modalContainer: { flex: 1, backgroundColor: '#fff', padding: 20, paddingTop: 50 },
     modalTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
     label: { fontWeight: '600', marginBottom: 5, marginTop: 15, color: '#444' },
-    input: { borderWidth: 1, borderColor: '#ddd', padding: 12, borderRadius: 8, backgroundColor: '#f9f9f9', fontSize: 16 },
+    input: { borderWidth: 1, borderColor: '#ddd', padding: 12, borderRadius: 8, backgroundColor: '#f9f9f9', fontSize: 16, color: '#333' },
     selector: { borderWidth: 1, borderColor: '#ddd', padding: 12, borderRadius: 8, backgroundColor: '#f9f9f9' },
     modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 30 },
     btn: { flex: 0.48, padding: 15, borderRadius: 8, alignItems: 'center' },

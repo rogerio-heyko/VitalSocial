@@ -46,10 +46,10 @@ export default function HomeScreen({ navigation }: any) {
             // Load reading plan
             const planRes = await api.get('/leitura');
             const plans = planRes.data;
-            // Find first unread OR just the plan for the current day of year OR just the first one
-            // Ideally: Find plan for today. If not exists, find first unread.
-            // Simplified: First unread, fallback to last one, fallback to first one.
-            const next = plans.find((p: any) => !p.lido) || plans[plans.length - 1] || plans[0];
+            let next = null;
+            if (Array.isArray(plans) && plans.length > 0) {
+                next = plans.find((p: any) => !p.lido) || plans[plans.length - 1];
+            }
             setNextReading(next);
         } catch (error) {
             console.log(error);
