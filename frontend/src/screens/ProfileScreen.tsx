@@ -127,8 +127,7 @@ export default function ProfileScreen() {
                     <Text style={styles.logoutButtonText}>{t('logout')}</Text>
                 </TouchableOpacity>
             </View>
-        </View>
-        </ScrollView >
+        </ScrollView>
     );
 }
 
