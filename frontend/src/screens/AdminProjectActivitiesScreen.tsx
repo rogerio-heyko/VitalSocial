@@ -139,6 +139,11 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                 <Text style={styles.headerSubtitle}>Gestão de Atividades</Text>
             </View>
 
+            <TouchableOpacity style={styles.topButton} onPress={openModal}>
+                <Ionicons name="add-circle-outline" size={24} color="#fff" />
+                <Text style={styles.topButtonText}>Nova Atividade</Text>
+            </TouchableOpacity>
+
             {loading ? (
                 <ActivityIndicator size="large" color="#4a90e2" style={{ marginTop: 50 }} />
             ) : (
@@ -146,14 +151,10 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                     data={activities}
                     keyExtractor={item => item.id}
                     renderItem={renderActivity}
-                    contentContainerStyle={{ padding: 20 }}
+                    contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
                     ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma atividade cadastrada neste projeto.</Text>}
                 />
             )}
-
-            <TouchableOpacity style={styles.fab} onPress={openModal}>
-                <Ionicons name="add" size={30} color="#fff" />
-            </TouchableOpacity>
 
             {/* Create Modal */}
             <Modal visible={modalVisible} animationType="slide">
@@ -249,7 +250,21 @@ const styles = StyleSheet.create({
     cardProf: { color: '#444', marginTop: 5, fontStyle: 'italic' },
     cardSubs: { marginTop: 8, fontSize: 12, color: '#888' },
     emptyText: { textAlign: 'center', marginTop: 50, color: '#999' },
-    fab: { position: 'absolute', right: 20, bottom: 20, backgroundColor: '#4a90e2', width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', elevation: 10, zIndex: 999 },
+    topButton: {
+        backgroundColor: '#4a90e2',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 12,
+        borderRadius: 8,
+        margin: 15,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 }
+    },
+    topButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16, marginLeft: 8 },
 
     modalContainer: { flex: 1, backgroundColor: '#fff', padding: 20, paddingTop: 50 },
     modalTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
