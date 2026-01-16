@@ -103,11 +103,7 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
 
     // ... styles update
 
-    const styles = StyleSheet.create({
-        // ...
-        input: { borderWidth: 1, borderColor: '#ddd', padding: 12, borderRadius: 8, backgroundColor: '#f9f9f9', fontSize: 16, color: '#333' },
-        // ...
-    });
+
 
     const getProfessorName = () => {
         const p = allUsers.find(u => u.id === professorId);
