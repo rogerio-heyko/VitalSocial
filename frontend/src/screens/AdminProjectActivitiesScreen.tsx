@@ -144,16 +144,14 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                 <Text style={styles.topButtonText}>Nova Atividade</Text>
             </TouchableOpacity>
 
-            {loading ? (
-                <ActivityIndicator size="large" color="#4a90e2" style={{ marginTop: 50 }} />
             ) : (
-                <FlatList
-                    data={activities}
-                    keyExtractor={item => item.id}
-                    renderItem={renderActivity}
-                    contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
-                    ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma atividade cadastrada neste projeto.</Text>}
-                />
+            <FlatList
+                data={activities}
+                keyExtractor={item => item.id}
+                renderItem={renderActivity}
+                contentContainerStyle={{ paddingHorizontal: 32, paddingBottom: 120, paddingTop: 64 }}
+                ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma atividade cadastrada neste projeto.</Text>}
+            />
             )}
 
             {/* Create Modal */}

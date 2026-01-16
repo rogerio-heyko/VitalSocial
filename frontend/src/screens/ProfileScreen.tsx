@@ -49,7 +49,7 @@ export default function ProfileScreen() {
     }
 
     return (
-        <View className="flex-1 bg-gray-100 px-8 pt-16 pb-16">
+        <ScrollView className="flex-1 bg-gray-100" contentContainerStyle={{ paddingHorizontal: 32, paddingBottom: 120, paddingTop: 64 }}>
             <View className="items-center mb-10 mt-10">
                 <View style={styles.avatarPlaceholder}>
                     <Text style={styles.avatarText}>{user?.nome?.charAt(0)}</Text>
@@ -128,6 +128,7 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
             </View>
         </View>
+        </ScrollView >
     );
 }
 

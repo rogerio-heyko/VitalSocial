@@ -41,8 +41,8 @@ export default function MainTabNavigator() {
                 tabBarStyle: {
                     borderTopWidth: 0,
                     elevation: 10,
-                    height: Platform.OS === 'android' ? 96 : 110, // Higher menu
-                    paddingBottom: Platform.OS === 'android' ? 32 : 40, // Push icons up from bottom
+                    height: Platform.OS === 'android' ? 120 : 130, // Higher menu to lift icons
+                    paddingBottom: Platform.OS === 'android' ? 50 : 50, // Icons start 72px from bottom (approx with padding)
                     paddingTop: 10,
                     backgroundColor: '#fff',
                 }

@@ -89,10 +89,10 @@ export default function HomeScreen({ navigation }: any) {
     return (
         <ScrollView
             className="flex-1 bg-white"
-            contentContainerStyle={{ paddingBottom: 100 }} // Extra padding for bottom tab
+            contentContainerStyle={{ paddingBottom: 120, paddingTop: 64, paddingHorizontal: 32 }} // Extra padding for bottom tab
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />}
         >
-            <View className="pt-6 px-8 pb-4 bg-white">
+            <View className="pb-4">
                 <View style={styles.headerTop}>
                     <View>
                         <Text style={styles.greeting}>{t('hello')}, {user?.nome?.split(' ')[0]}</Text>
@@ -201,11 +201,11 @@ const styles = StyleSheet.create({
     headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     greeting: { fontSize: 28, fontWeight: 'bold', color: '#00A09A' }, // Brand Teal
     subtitle: { fontSize: 16, color: '#666' },
-    section: { marginTop: 20, paddingHorizontal: 20 },
+    section: { marginTop: 20 },
     sectionTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 12, color: '#00A09A' },
     sectionTitleWhite: { fontSize: 18, fontWeight: 'bold', marginBottom: 8, color: '#fff' },
     emptyText: { textAlign: 'center', color: '#999', marginTop: 20 },
-    readingWidgetContainer: { marginHorizontal: 20, marginTop: 10, borderRadius: 16, overflow: 'hidden' },
+    readingWidgetContainer: { marginTop: 10, borderRadius: 16, overflow: 'hidden' },
     readingWidget: {
         padding: 24,
         borderRadius: 16,
