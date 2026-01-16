@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     cardProf: { color: '#444', marginTop: 5, fontStyle: 'italic' },
     cardSubs: { marginTop: 8, fontSize: 12, color: '#888' },
     emptyText: { textAlign: 'center', marginTop: 50, color: '#999' },
-    fab: { position: 'absolute', right: 20, bottom: 20, backgroundColor: '#4a90e2', width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', elevation: 5 },
+    fab: { position: 'absolute', right: 20, bottom: 20, backgroundColor: '#4a90e2', width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', elevation: 10, zIndex: 999 },
 
     modalContainer: { flex: 1, backgroundColor: '#fff', padding: 20, paddingTop: 50 },
     modalTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },

@@ -21,7 +21,7 @@ import { translateBibleRef } from '../utils/bibleTranslator';
 
 export default function HomeScreen({ navigation }: any) {
     const { t, language } = useLanguage();
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [activities, setActivities] = useState<Activity[]>([]);
     const [feed, setFeed] = useState<any[]>([]);
     const [myInscriptions, setMyInscriptions] = useState<Inscription[]>([]);
@@ -30,8 +30,11 @@ export default function HomeScreen({ navigation }: any) {
     const [nextReading, setNextReading] = useState<any>(null);
 
     async function loadData() {
+        if (authLoading) return; // Don't fetch if still checking auth
+
         try {
             setRefreshing(true);
+            // ... (rest of function)
             // Load all activities
             const acts = await api.get('/atividades');
             setActivities(acts.data);
@@ -53,7 +56,7 @@ export default function HomeScreen({ navigation }: any) {
             }
             setNextReading(next);
         } catch (error) {
-            console.log(error);
+            console.log("Error loading Home Data:", error);
             // Silently fail or show simple toast
         } finally {
             setRefreshing(false);
@@ -62,8 +65,10 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     useEffect(() => {
-        loadData();
-    }, []);
+        if (!authLoading) {
+            loadData();
+        }
+    }, [authLoading]);
 
     async function handleSubscribe(activityId: string) {
         try {
