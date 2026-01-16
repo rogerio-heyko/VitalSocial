@@ -5,7 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { RootStackParamList } from '../routes/Routes'; // Ensure this matches actual location
+import { RootStackParamList } from '../navigation';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProfessorDashboard'>;
 
