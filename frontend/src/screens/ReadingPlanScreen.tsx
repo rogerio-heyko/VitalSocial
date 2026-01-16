@@ -305,51 +305,49 @@ export default function ReadingPlanScreen() {
         );
     };
 
-            </TouchableOpacity >
-        );
-};
 
-return (
-    <View className="flex-1 bg-white pt-16">
-        <Text style={styles.screenTitle}>{t('readingPlanTitle')}</Text>
-        <FlatList
-            ref={flatListRef}
-            data={plans}
-            keyExtractor={item => item.id}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingHorizontal: 32, paddingBottom: 120 }} // updated padding
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />}
-            ListEmptyComponent={<Text style={styles.empty}>{refreshing ? t('loading') : t('noPlanFound')}</Text>}
-            initialNumToRender={10}
-        />
 
-        <Modal
-            animationType="slide"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={() => setModalVisible(false)}
-        >
-            <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                    <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>{currentReadingTitle}</Text>
-                        <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
-                            <Ionicons name="close" size={24} color="#333" />
-                        </TouchableOpacity>
+    return (
+        <View className="flex-1 bg-white pt-16">
+            <Text style={styles.screenTitle}>{t('readingPlanTitle')}</Text>
+            <FlatList
+                ref={flatListRef}
+                data={plans}
+                keyExtractor={item => item.id}
+                renderItem={renderItem}
+                contentContainerStyle={{ paddingHorizontal: 32, paddingBottom: 120 }} // updated padding
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />}
+                ListEmptyComponent={<Text style={styles.empty}>{refreshing ? t('loading') : t('noPlanFound')}</Text>}
+                initialNumToRender={10}
+            />
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>{currentReadingTitle}</Text>
+                            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+                                <Ionicons name="close" size={24} color="#333" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView contentContainerStyle={{ padding: 20 }}>
+                            {loadingReading ? (
+                                <ActivityIndicator size="large" color="#00A09A" />
+                            ) : (
+                                <Text style={styles.bibleText}>{readingContent}</Text>
+                            )}
+                        </ScrollView>
                     </View>
-
-                    <ScrollView contentContainerStyle={{ padding: 20 }}>
-                        {loadingReading ? (
-                            <ActivityIndicator size="large" color="#00A09A" />
-                        ) : (
-                            <Text style={styles.bibleText}>{readingContent}</Text>
-                        )}
-                    </ScrollView>
                 </View>
-            </View>
-        </Modal>
-    </View>
-);
+            </Modal>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
