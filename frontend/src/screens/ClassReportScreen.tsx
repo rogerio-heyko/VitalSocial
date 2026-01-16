@@ -4,7 +4,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../services/api';
-import { RootStackParamList } from '../routes/Routes';
+import { RootStackParamList } from '../navigation';
 
 type ClassReportRouteProp = RouteProp<RootStackParamList, 'ClassReport'>;
 
