@@ -95,9 +95,10 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
             Alert.alert("Sucesso", "Atividade criada!");
             setModalVisible(false);
             loadActivities();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            Alert.alert("Erro", "Falha ao criar atividade.");
+            const msg = error.response?.data?.message || "Falha ao criar atividade.";
+            Alert.alert("Erro", msg);
         }
     }
 

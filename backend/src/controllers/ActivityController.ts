@@ -28,7 +28,8 @@ export class ActivityController {
         const data: any = {
             titulo,
             tipo,
-            dataHora: new Date(dataHora),
+            // Ensure standard ISO format by replacing space with T if needed
+            dataHora: new Date(dataHora.includes('T') ? dataHora : dataHora.replace(' ', 'T')),
             professorResponsavelId: professorResponsavelId || id,
         };
 
