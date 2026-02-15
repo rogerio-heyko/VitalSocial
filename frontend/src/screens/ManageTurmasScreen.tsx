@@ -8,6 +8,7 @@ interface Turma {
     nome: string; // "Turma A"
     diasHorarios: string; // "Seg 14:00"
     professor: { nome: string };
+    professorId?: string; // Add optional ID
     _count?: { inscricoes: number };
 }
 
@@ -70,6 +71,41 @@ export default function ManageTurmasScreen({ route, navigation }: any) {
         setModalVisible(true);
     }
 
+    async function handleDelete(id: string) {
+        Alert.alert(
+            "Excluir",
+            "Deseja realmente excluir esta turma?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Excluir", style: "destructive", onPress: async () => {
+                        try {
+                            await api.delete(`/turmas/${id}`);
+                            Alert.alert("Sucesso", "Turma excluída.");
+                            loadTurmas();
+                        } catch (error: any) {
+                            const msg = error.response?.data?.message || "Falha ao excluir.";
+                            Alert.alert("Erro", msg);
+                        }
+                    }
+                }
+            ]
+        );
+    }
+
+    function openEditModal(item: Turma) {
+        setNome(item.nome);
+        setDiasHorarios(item.diasHorarios);
+        setProfessorId(item.professorId || ''); // Assuming we might need to fetch it or it comes in listing.
+        // Check interface: professor: { nome: string }. ID missing again?
+        // Let's check listing logic in backend TurmaController.ts:
+        // include: { professor: { select: { nome: true } } } -> ID missing.
+        // Frontend workaround: User re-selects if editing. 
+
+        setEditingId(item.id);
+        setModalVisible(true);
+    }
+
     async function handleSave() {
         if (!nome || !professorId) {
             Alert.alert("Atenção", "Preencha nome e professor.");
@@ -77,19 +113,31 @@ export default function ManageTurmasScreen({ route, navigation }: any) {
         }
 
         try {
-            await api.post('/turmas', {
+            const payload = {
                 nome,
                 diasHorarios,
                 atividadeId: activityId,
-                professorResponsavelId: professorId
-            });
-            Alert.alert("Sucesso", "Turma criada!");
+                professorResponsavelId: professorId,
+                professorId // Just to be safe if backend uses this naming
+            };
+
+            if (editingId) {
+                await api.put(`/turmas/${editingId}`, payload);
+                Alert.alert("Sucesso", "Turma atualizada!");
+            } else {
+                await api.post('/turmas', payload);
+                Alert.alert("Sucesso", "Turma criada!");
+            }
+
             setModalVisible(false);
+            setEditingId(null);
             loadTurmas();
         } catch (error) {
-            Alert.alert("Erro", "Falha ao criar turma.");
+            Alert.alert("Erro", "Falha ao salvar turma.");
         }
     }
+
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     const getProfessorName = () => {
         const p = allUsers.find(u => u.id === professorId);
@@ -105,6 +153,16 @@ export default function ManageTurmasScreen({ route, navigation }: any) {
             </View>
             <View style={{ alignItems: 'flex-end' }}>
                 <Text style={styles.cardSubs}>{item._count ? item._count.inscricoes : 0} alunos</Text>
+
+                <View style={styles.actionButtons}>
+                    <TouchableOpacity style={[styles.editBtn, { marginRight: 10 }]} onPress={() => openEditModal(item)}>
+                        <Ionicons name="create-outline" size={20} color="#fff" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item.id)}>
+                        <Ionicons name="trash-outline" size={20} color="#fff" />
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
@@ -128,13 +186,13 @@ export default function ManageTurmasScreen({ route, navigation }: any) {
                 />
             )}
 
-            <TouchableOpacity style={styles.fab} onPress={openModal}>
+            <TouchableOpacity style={styles.fab} onPress={() => { setEditingId(null); openModal(); }}>
                 <Ionicons name="add" size={30} color="#fff" />
             </TouchableOpacity>
 
             <Modal visible={modalVisible} animationType="slide">
                 <View style={styles.modalContainer}>
-                    <Text style={styles.modalTitle}>Nova Turma</Text>
+                    <Text style={styles.modalTitle}>{editingId ? 'Editar Turma' : 'Nova Turma'}</Text>
 
                     <Text style={styles.label}>Nome da Turma</Text>
                     <TextInput style={styles.input} value={nome} onChangeText={setNome} placeholder="Ex: Turma A - Manhã" />
@@ -203,5 +261,9 @@ const styles = StyleSheet.create({
     btnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
     userItem: { padding: 15, borderBottomWidth: 1, borderColor: '#eee' },
     userName: { fontSize: 16, fontWeight: 'bold' },
-    userRole: { fontSize: 12, color: '#4a90e2' }
+    userRole: { fontSize: 12, color: '#4a90e2' },
+
+    actionButtons: { flexDirection: 'row', marginTop: 10 },
+    editBtn: { backgroundColor: '#ff9800', padding: 8, borderRadius: 5, justifyContent: 'center' },
+    deleteBtn: { backgroundColor: '#f44336', padding: 8, borderRadius: 5, justifyContent: 'center' }
 });

@@ -11,5 +11,7 @@ turmaRoutes.get('/atividade/:atividadeId', TurmaController.listByActivity);
 turmaRoutes.get('/minhas', TurmaController.listMyClasses);
 turmaRoutes.get('/:id', TurmaController.getDetails);
 turmaRoutes.post('/:id/alunos', TurmaController.addStudent);
+turmaRoutes.put('/:id', TurmaController.update);
+turmaRoutes.delete('/:id', TurmaController.delete);
 
 export { turmaRoutes };

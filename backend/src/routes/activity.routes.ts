@@ -12,5 +12,7 @@ activityRoutes.get('/', activityController.listar);
 activityRoutes.post('/:id/inscrever', activityController.inscrever);
 activityRoutes.get('/minhas', activityController.minhasInscricoes);
 activityRoutes.get('/projeto/:projetoId', activityController.listarPorProjeto);
+activityRoutes.put('/:id', activityController.update);
+activityRoutes.delete('/:id', activityController.delete);
 
 export { activityRoutes };

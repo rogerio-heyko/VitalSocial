@@ -114,6 +114,47 @@ class TurmaController {
 
         return res.json(inscricao);
     }
+
+    // Atualizar Turma
+    async update(req: Request, res: Response) {
+        const { id } = req.params;
+        const { nome, diasHorarios, professorResponsavelId } = req.body;
+
+        const turma = await prisma.turma.findUnique({ where: { id } });
+        if (!turma) {
+            throw new AppError('Turma não encontrada.', 404);
+        }
+
+        const data: any = {};
+        if (nome) data.nome = nome;
+        if (diasHorarios) data.diasHorarios = diasHorarios;
+        if (professorResponsavelId) data.professorResponsavelId = professorResponsavelId;
+
+        const updated = await prisma.turma.update({
+            where: { id },
+            data
+        });
+
+        return res.json(updated);
+    }
+
+    // Excluir Turma
+    async delete(req: Request, res: Response) {
+        const { id } = req.params;
+
+        const turma = await prisma.turma.findUnique({ where: { id } });
+        if (!turma) {
+            throw new AppError('Turma não encontrada.', 404);
+        }
+
+        try {
+            await prisma.turma.delete({ where: { id } });
+        } catch (error) {
+            throw new AppError('Não é possível excluir turma com alunos ou relatórios associados.', 400);
+        }
+
+        return res.status(204).send();
+    }
 }
 
 export default new TurmaController();
