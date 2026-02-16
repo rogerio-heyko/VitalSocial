@@ -28,51 +28,54 @@ model Usuario {
   email        String      @unique
   senhaHash    String
   tipo         TipoUsuario
-  cargo        String?     // Ex: "Presidente", "Diretor", "Secretário", "Funcionário"
+  cargo        String? // Ex: "Presidente", "Diretor", "Secretário", "Funcionário"
   menorIdade   Boolean     @default(false)
   dataCadastro DateTime    @default(now())
 
   // LGPD & Segurança
-  cpf              String?     @unique
-  dataNascimento   DateTime?
-  telefone         String?
-  endereco         String?     // Simplificado para JSON se precisar
-  
-  emailVerificado  Boolean     @default(false)
+  cpf            String?   @unique
+  dataNascimento DateTime?
+  telefone       String?
+  endereco       String? // Simplificado para JSON se precisar
+
+  emailVerificado  Boolean @default(false)
   tokenVerificacao String?
   tokenRecuperacao String?
-  
-  termosAceitos    Boolean     @default(false)
 
-  dataTermos       DateTime?
+  termosAceitos Boolean @default(false)
+
+  dataTermos DateTime?
 
   // Notificações
-  pushToken        String?
+  pushToken String?
 
   // Relations
   perfilDoador       PerfilDoador?
   perfilBeneficiario PerfilBeneficiario?
-  
-  // Responsáveis - Self Relation (Many-to-Many via implicit or explicit table, here explicit for clarity if needed, or simple self relation)
-  // Simplifying for now: A user can validly be a dependent of others
-  responsaveis       Responsavel[] @relation("Dependentes")
-  dependentes        Responsavel[] @relation("Responsaveis")
 
-  inscricoes         Inscricao[]
-  atividadesMinistradas Atividade[] // Professor
-  turmasResponsavel  Turma[]       // Professor de Turma
+  // Responsáveis - Self Relation
+  responsaveis Responsavel[] @relation("Dependentes")
+  dependentes  Responsavel[] @relation("Responsaveis")
+
+  inscricoes Inscricao[]
+
+  // Phase 2: User Relations
+  atividadesCoordenadas Atividade[] @relation("CoordenadorAtividade") // Was atividadesMinistradas (single)
+  atividadesLecionadas  Atividade[] @relation("ProfessoresAtividade") // New N-N
+  turmasLecionadas      Turma[]     @relation("ProfessoresTurma") // New N-N
+
   leiturasConcluidas LeituraUsuario[]
   doacoes            Doacao[]
   postsForum         ForumPost[]
 }
 
 model Responsavel {
-  id              String   @id @default(uuid())
-  usuarioId       String
-  responsavelId   String
-  
-  usuario         Usuario  @relation("Dependentes", fields: [usuarioId], references: [id])
-  responsavel     Usuario  @relation("Responsaveis", fields: [responsavelId], references: [id])
+  id            String @id @default(uuid())
+  usuarioId     String
+  responsavelId String
+
+  usuario     Usuario @relation("Dependentes", fields: [usuarioId], references: [id])
+  responsavel Usuario @relation("Responsaveis", fields: [responsavelId], references: [id])
 
   @@unique([usuarioId, responsavelId])
 }
@@ -86,74 +89,74 @@ model PerfilDoador {
 }
 
 model PerfilBeneficiario {
-  id                    String  @id @default(uuid())
-  usuarioId             String  @unique
-  usuario               Usuario @relation(fields: [usuarioId], references: [id])
-  
-  // JSON estruturado para flexibilidade (contém: Composição Familiar, Socioeconômico, Moradia, Vínculo, Espiritualidade)
-  // Campos explícitos para filtros rápidos
-  rendaFamiliar         Decimal?
-  numeroDependentes     Int?
-  possuiDeficiencia     Boolean  @default(false)
-  
+  id        String  @id @default(uuid())
+  usuarioId String  @unique
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+
+  rendaFamiliar     Decimal?
+  numeroDependentes Int?
+  possuiDeficiencia Boolean  @default(false)
+
   dadosQuestionarioSocial Json
 }
 
 model Atividade {
-  id                   String        @id @default(uuid())
-  titulo               String
-  tipo                 TipoAtividade
-  dataHora             DateTime
-  professorResponsavelId String
-  professor            Usuario       @relation(fields: [professorResponsavelId], references: [id])
-  
-  projetoId            String?       // Opcional por compatibilidade, mas idealmente obrigatório
-  projeto              Projeto?      @relation(fields: [projetoId], references: [id])
+  id       String        @id @default(uuid())
+  titulo   String
+  tipo     TipoAtividade
+  dataHora DateTime? // Made Optional (Phase 2)
 
-  turmas               Turma[]
-  inscricoes           Inscricao[]   // Geral (sem turma definida ainda) ou histórico
-  postsForum           ForumPost[]
-  relatorios           RelatorioAula[]
+  coordenadorId String // Renamed from professorResponsavelId
+  coordenador   Usuario @relation("CoordenadorAtividade", fields: [coordenadorId], references: [id])
+
+  professores Usuario[] @relation("ProfessoresAtividade") // New N-N (Phase 2)
+
+  projetoId String?
+  projeto   Projeto? @relation(fields: [projetoId], references: [id])
+
+  turmas     Turma[]
+  inscricoes Inscricao[]
+  postsForum ForumPost[]
+  relatorios RelatorioAula[]
 }
 
 model Turma {
-  id                   String        @id @default(uuid())
-  nome                 String        // Ex: "Turma A - Matutino"
-  diasHorarios         String?       // Ex: "Seg/Qua 10:00"
-  
-  atividadeId          String
-  atividade            Atividade     @relation(fields: [atividadeId], references: [id])
-  
-  professorResponsavelId String
-  professor            Usuario       @relation(fields: [professorResponsavelId], references: [id])
+  id           String  @id @default(uuid())
+  nome         String
+  diasHorarios String?
 
-  inscricoes           Inscricao[]
-  relatorios           RelatorioAula[]
+  atividadeId String
+  atividade   Atividade @relation(fields: [atividadeId], references: [id])
+
+  professores Usuario[] @relation("ProfessoresTurma") // New N-N (Phase 2), replaced single professor
+
+  inscricoes Inscricao[]
+  relatorios RelatorioAula[]
 }
 
 model Inscricao {
-  id          String    @id @default(uuid())
-  alunoId     String
-  atividadeId String
-  turmaId     String? // Opcional, pois pode se inscrever na atividade geral antes de ser alocado
-  turma       Turma?    @relation(fields: [turmaId], references: [id])
+  id            String   @id @default(uuid())
+  alunoId       String
+  atividadeId   String
+  turmaId       String? // Opcional, pois pode se inscrever na atividade geral antes de ser alocado
+  turma         Turma?   @relation(fields: [turmaId], references: [id])
   dataInscricao DateTime @default(now())
 
-  aluno       Usuario   @relation(fields: [alunoId], references: [id])
-  atividade   Atividade @relation(fields: [atividadeId], references: [id])
-  
-  presencas   Presenca[]
+  aluno     Usuario   @relation(fields: [alunoId], references: [id])
+  atividade Atividade @relation(fields: [atividadeId], references: [id])
+
+  presencas Presenca[]
 }
 
 model Presenca {
-  id          String   @id @default(uuid())
-  inscricaoId String
-  inscricao   Inscricao @relation(fields: [inscricaoId], references: [id])
-  dataAula    DateTime
-  presente       Boolean  @default(false)
+  id              String         @id @default(uuid())
+  inscricaoId     String
+  inscricao       Inscricao      @relation(fields: [inscricaoId], references: [id])
+  dataAula        DateTime
+  presente        Boolean        @default(false)
   relatorioAulaId String?
-  relatorioAula  RelatorioAula? @relation(fields: [relatorioAulaId], references: [id])
-  criadoEm       DateTime @default(now())
+  relatorioAula   RelatorioAula? @relation(fields: [relatorioAulaId], references: [id])
+  criadoEm        DateTime       @default(now())
 }
 
 model PlanoLeitura {
@@ -162,24 +165,24 @@ model PlanoLeitura {
   trechosBiblicos String
   reflexao        String?
   criadoEm        DateTime @default(now())
-  
-  leituras        LeituraUsuario[]
+
+  leituras LeituraUsuario[]
 }
 
 model LeituraUsuario {
-  id              String          @id @default(uuid())
-  usuarioId       String
-  usuario         Usuario         @relation(fields: [usuarioId], references: [id])
-  planoLeituraId  String
-  planoLeitura    PlanoLeitura    @relation(fields: [planoLeituraId], references: [id])
-  concluido       Boolean         @default(true)
-  dataConclusao   DateTime        @default(now())
+  id             String       @id @default(uuid())
+  usuarioId      String
+  usuario        Usuario      @relation(fields: [usuarioId], references: [id])
+  planoLeituraId String
+  planoLeitura   PlanoLeitura @relation(fields: [planoLeituraId], references: [id])
+  concluido      Boolean      @default(true)
+  dataConclusao  DateTime     @default(now())
 
   @@unique([usuarioId, planoLeituraId])
 }
 
 model RelatorioAula {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   atividadeId String
   atividade   Atividade @relation(fields: [atividadeId], references: [id])
   turmaId     String?
@@ -187,65 +190,65 @@ model RelatorioAula {
   dataAula    DateTime
   descricao   String
   fotoUrl     String?
-  criadoEm    DateTime @default(now())
-  
-  presencas   Presenca[]
+  criadoEm    DateTime  @default(now())
+
+  presencas Presenca[]
 }
 
 model Configuracao {
-  chave       String   @id @unique
-  valor       String
-  descricao   String?
+  chave        String   @id @unique
+  valor        String
+  descricao    String?
   atualizadoEm DateTime @default(now())
 }
 
 model Doacao {
-  id          String   @id @default(uuid())
-  usuarioId   String?
-  projetoId   String?
-  usuario     Usuario? @relation(fields: [usuarioId], references: [id])
-  projeto     Projeto? @relation(fields: [projetoId], references: [id])
-  valor       Decimal
-  metodo      String   // PIX, CRIPTO
-  moeda       String   // BRL, ETH, BTC, USDT
-  status      String   @default("PENDENTE") // PENDENTE, CONFIRMADO
-  txId        String?  // Hash da transação ou ID Pix
-  
+  id        String   @id @default(uuid())
+  usuarioId String?
+  projetoId String?
+  usuario   Usuario? @relation(fields: [usuarioId], references: [id])
+  projeto   Projeto? @relation(fields: [projetoId], references: [id])
+  valor     Decimal
+  metodo    String // PIX, CRIPTO
+  moeda     String // BRL, ETH, BTC, USDT
+  status    String   @default("PENDENTE") // PENDENTE, CONFIRMADO
+  txId      String? // Hash da transação ou ID Pix
+
   // Crypto Details
   carteiraDoador      String?
-  taxaApp             Decimal?  // 5%
-  valorLiquidoProjeto Decimal?  // 95%
-  
-  criadoEm    DateTime @default(now())
+  taxaApp             Decimal? // 5%
+  valorLiquidoProjeto Decimal? // 95%
+
+  criadoEm DateTime @default(now())
 }
 
 model Projeto {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   nome        String
   descricao   String?
   instituicao String? // Nome da instituição que gerencia o projeto
-  
+
   // Chaves de Doação Específicas
-  chavePix    String?
-  walletBtc   String?
-  walletEth   String?
-  walletUsdt  String?
-  
-  ativo       Boolean  @default(true)
-  criadoEm    DateTime @default(now())
-  
-  doacoes     Doacao[]
-  atividades  Atividade[]
+  chavePix   String?
+  walletBtc  String?
+  walletEth  String?
+  walletUsdt String?
+
+  ativo    Boolean  @default(true)
+  criadoEm DateTime @default(now())
+
+  doacoes    Doacao[]
+  atividades Atividade[]
 }
 
 model ForumPost {
-  id          String    @id @default(uuid())
-  conteudo    String
+  id           String   @id @default(uuid())
+  conteudo     String
   dataPostagem DateTime @default(now())
-  
+
   usuarioId   String
   atividadeId String
 
-  usuario     Usuario   @relation(fields: [usuarioId], references: [id])
-  atividade   Atividade @relation(fields: [atividadeId], references: [id])
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id])
+  atividade Atividade @relation(fields: [atividadeId], references: [id])
 }

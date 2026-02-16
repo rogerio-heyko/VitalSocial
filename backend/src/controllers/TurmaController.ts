@@ -6,10 +6,10 @@ class TurmaController {
 
     // Criar Turma
     async create(req: Request, res: Response) {
-        const { nome, diasHorarios, atividadeId, professorResponsavelId } = req.body;
+        const { nome, diasHorarios, atividadeId, professoresIds } = req.body;
 
-        if (!nome || !atividadeId || !professorResponsavelId) {
-            throw new AppError('Nome, Atividade e Professor são obrigatórios.');
+        if (!nome || !atividadeId) {
+            throw new AppError('Nome e Atividade são obrigatórios.');
         }
 
         const turma = await prisma.turma.create({
@@ -17,7 +17,9 @@ class TurmaController {
                 nome,
                 diasHorarios,
                 atividadeId,
-                professorResponsavelId
+                professores: {
+                    connect: professoresIds?.map((id: string) => ({ id })) || []
+                }
             }
         });
 
@@ -31,7 +33,7 @@ class TurmaController {
         const turmas = await prisma.turma.findMany({
             where: { atividadeId },
             include: {
-                professor: { select: { nome: true } },
+                professores: { select: { nome: true, id: true } },
                 _count: { select: { inscricoes: true } }
             }
         });
@@ -46,7 +48,7 @@ class TurmaController {
         const turma = await prisma.turma.findUnique({
             where: { id },
             include: {
-                professor: { select: { nome: true, id: true } },
+                professores: { select: { nome: true, id: true } },
                 atividade: { select: { titulo: true } },
                 inscricoes: {
                     include: {
@@ -68,7 +70,11 @@ class TurmaController {
         const { id } = req.user;
 
         const turmas = await prisma.turma.findMany({
-            where: { professorResponsavelId: id },
+            where: {
+                professores: {
+                    some: { id }
+                }
+            },
             include: {
                 atividade: { select: { titulo: true, tipo: true } },
                 _count: { select: { inscricoes: true } }
@@ -118,7 +124,7 @@ class TurmaController {
     // Atualizar Turma
     async update(req: Request, res: Response) {
         const { id } = req.params;
-        const { nome, diasHorarios, professorResponsavelId } = req.body;
+        const { nome, diasHorarios, professoresIds } = req.body;
 
         const turma = await prisma.turma.findUnique({ where: { id } });
         if (!turma) {
@@ -128,11 +134,17 @@ class TurmaController {
         const data: any = {};
         if (nome) data.nome = nome;
         if (diasHorarios) data.diasHorarios = diasHorarios;
-        if (professorResponsavelId) data.professorResponsavelId = professorResponsavelId;
+
+        if (professoresIds) {
+            data.professores = {
+                set: professoresIds.map((pid: string) => ({ id: pid }))
+            };
+        }
 
         const updated = await prisma.turma.update({
             where: { id },
-            data
+            data,
+            include: { professores: true }
         });
 
         return res.json(updated);
