@@ -80,7 +80,7 @@ export class ClassReportController {
     // 2. Register Attendance via QR Code
     async registerAttendance(req: Request, res: Response) {
         const { token } = req.body;
-        const studentId = req.user_id; // Added by Auth Middleware
+        const studentId = (req as any).user_id; // Added by Auth Middleware
 
         if (!token) throw new AppError('Token de presença obrigatório.');
 

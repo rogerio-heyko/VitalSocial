@@ -48,7 +48,7 @@ export class ActivityController {
         // Filtros opcionais podem ser adicionados aqui via query params
         const atividades = await prisma.atividade.findMany({
             include: {
-                professor: {
+                coordenador: {
                     select: { nome: true, email: true }
                 },
                 projeto: {
@@ -70,7 +70,7 @@ export class ActivityController {
         const atividades = await prisma.atividade.findMany({
             where: { projetoId },
             include: {
-                professor: {
+                coordenador: {
                     select: { nome: true, email: true, id: true }
                 },
                 _count: {
@@ -123,7 +123,7 @@ export class ActivityController {
             include: {
                 atividade: {
                     include: {
-                        professor: {
+                        coordenador: {
                             select: { nome: true }
                         }
                     }
