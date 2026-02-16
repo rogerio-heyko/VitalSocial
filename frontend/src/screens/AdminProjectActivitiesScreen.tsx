@@ -32,12 +32,14 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
     const [titulo, setTitulo] = useState('');
     const [tipo, setTipo] = useState<'AULA' | 'CURSO' | 'EVENTO'>('AULA');
     const [dataHora, setDataHora] = useState(''); // Text "YYYY-MM-DD HH:mm"
-    const [professorId, setProfessorId] = useState('');
+    const [coordenadorId, setCoordenadorId] = useState('');
+    const [professoresIds, setProfessoresIds] = useState<string[]>([]);
     const [scheduleText, setScheduleText] = useState('');
 
     // Selection Modals
     const [showTypeSelect, setShowTypeSelect] = useState(false);
-    const [showUserSelect, setShowUserSelect] = useState(false);
+    const [showCoordenadorSelect, setShowCoordenadorSelect] = useState(false);
+    const [showProfessoresSelect, setShowProfessoresSelect] = useState(false);
 
     const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -46,15 +48,20 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
         loadUsers();
     }, []);
 
-    const getProfessorName = () => {
-        const p = allUsers.find(u => u.id === professorId);
-        return p ? p.nome : "Selecione um Professor";
+    const getCoordenadorName = () => {
+        const p = allUsers.find(u => u.id === coordenadorId);
+        return p ? p.nome : "Selecione o Coordenador";
+    };
+
+    const getProfessoresNames = () => {
+        if (professoresIds.length === 0) return "Nenhum selecionado";
+        const names = allUsers.filter(u => professoresIds.includes(u.id)).map(u => u.nome);
+        return names.join(', ');
     };
 
     async function loadActivities() {
         try {
             const response = await api.get(`/atividades/projeto/${projectId}`);
-            // Convert strings to nice format if needed, but keeping raw for now
             setActivities(response.data);
         } catch (error) {
             console.error(error);
@@ -80,8 +87,10 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
     function openModal() {
         setTitulo('');
         setTipo('AULA');
-        setDataHora(new Date().toISOString().slice(0, 16).replace('T', ' ')); // "2023-01-01 10:00"
-        setProfessorId('');
+        setDataHora('');
+        setCoordenadorId('');
+        setProfessoresIds([]);
+        setScheduleText('');
         setModalVisible(true);
     }
 
@@ -107,44 +116,34 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
         );
     }
 
-    function openEditModal(item: Activity) {
+    function openEditModal(item: any) {
         setTitulo(item.titulo.split(' (')[0]);
-        // Try to extract schedule text if present in title "Title (Schedule)"
         const match = item.titulo.match(/\(([^)]+)\)$/);
         setScheduleText(match ? match[1] : '');
 
         setTipo(item.tipo);
-        // Ensure date string is compatible with TextInput (YYYY-MM-DD HH:mm)
-        const d = new Date(item.dataHora);
-        // Adjust for timezone offset if necessary or just use ISO string slice
-        // Simple approach:
-        const iso = d.toISOString();
-        const datePart = iso.slice(0, 10);
-        const timePart = iso.slice(11, 16);
-        setDataHora(`${datePart} ${timePart}`);
 
-        setProfessorId(item.professor?.id || ''); // Assuming item.professor has ID, if not needed to fetch
-        // Note: The list endpoint might not return professor ID in item.professor object based on previous controller code.
-        // Let's check: Controller list method includes professor: { select: { nome: true, email: true } } -> NO ID.
-        // We will need to rely on the user re-selecting or backend changing. 
-        // For now, let's keep it empty or try to match by name? No, risky. 
-        // User will have to select professor again or we update backend to return ID.
-        // -> I'll update backend to return ID in list method for better UX.
+        if (item.dataHora) {
+            const d = new Date(item.dataHora);
+            const iso = d.toISOString();
+            setDataHora(`${iso.slice(0, 10)} ${iso.slice(11, 16)}`);
+        } else {
+            setDataHora('');
+        }
 
-        // Wait, I can't update backend in this same step easily without context switching.
-        // Let's assume for now user re-selects or we just show "Select" if unknown.
+        setCoordenadorId(item.coordenador?.id || item.coordenadorId || '');
 
-        // Actually, let's check if the list endpoint return ID.
-        // Controller: select: { nome: true, email: true } -> ID MISSING.
-        // I will do a quick "blind" fix in frontend to assume user re-selects it for now.
+        // Map professors array to IDs
+        const pIds = item.professores ? item.professores.map((p: any) => p.id) : [];
+        setProfessoresIds(pIds);
 
         setEditingId(item.id);
         setModalVisible(true);
     }
 
     async function handleSave() {
-        if (!titulo || !dataHora) {
-            Alert.alert("Atenção", "Preencha título e data/hora.");
+        if (!titulo || !coordenadorId) {
+            Alert.alert("Atenção", "Título e Coordenador são obrigatórios.");
             return;
         }
 
@@ -152,19 +151,16 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
             const payload = {
                 titulo: (tipo === 'AULA' && scheduleText) ? `${titulo} (${scheduleText})` : titulo,
                 tipo,
-                dataHora,
+                dataHora: dataHora || null,
                 projetoId: projectId,
-                professorResponsavelId: professorId || undefined
+                coordenadorId,
+                professoresIds
             };
 
             if (editingId) {
                 await api.put(`/atividades/${editingId}`, payload);
                 Alert.alert("Sucesso", "Atividade atualizada!");
             } else {
-                if (!professorId) {
-                    Alert.alert("Atenção", "Preencha o professor.");
-                    return;
-                }
                 await api.post('/atividades', payload);
                 Alert.alert("Sucesso", "Atividade criada!");
             }
@@ -179,17 +175,27 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
         }
     }
 
-
+    // Toggle professor selection
+    function toggleProfessor(id: string) {
+        if (professoresIds.includes(id)) {
+            setProfessoresIds(professoresIds.filter(pid => pid !== id));
+        } else {
+            setProfessoresIds([...professoresIds, id]);
+        }
+    }
 
     // ... inside renderActivity ...
-    const renderActivity = ({ item }: { item: Activity }) => (
+    const renderActivity = ({ item }: { item: any }) => (
         <View style={styles.card}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.cardTitle}>{item.titulo}</Text>
                 <Text style={styles.cardType}>{item.tipo}</Text>
             </View>
-            <Text style={styles.cardDate}>{new Date(item.dataHora).toLocaleString()}</Text>
-            <Text style={styles.cardProf}>Prof: {item.professor?.nome}</Text>
+            {item.dataHora && <Text style={styles.cardDate}>{new Date(item.dataHora).toLocaleString()}</Text>}
+            <Text style={styles.cardProf}>Coord: {item.coordenador?.nome}</Text>
+            {item.professores && item.professores.length > 0 && (
+                <Text style={styles.cardProf}>Profs: {item.professores.map((p: any) => p.nome).join(', ')}</Text>
+            )}
             {item._count && <Text style={styles.cardSubs}>{item._count.inscricoes} inscritos</Text>}
 
             <View style={styles.actionButtons}>
@@ -236,33 +242,40 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                 <View style={styles.modalContainer}>
                     <Text style={styles.modalTitle}>{editingId ? 'Editar Atividade' : 'Nova Atividade'}</Text>
 
-                    <Text style={styles.label}>Título</Text>
-                    <TextInput style={styles.input} value={titulo} onChangeText={setTitulo} placeholder="Ex: Aula de Música" />
+                    <ScrollView>
+                        <Text style={styles.label}>Título</Text>
+                        <TextInput style={styles.input} value={titulo} onChangeText={setTitulo} placeholder="Ex: Aula de Música" />
 
-                    <Text style={styles.label}>Tipo</Text>
-                    <TouchableOpacity style={styles.selector} onPress={() => setShowTypeSelect(true)}>
-                        <Text>{tipo}</Text>
-                    </TouchableOpacity>
+                        <Text style={styles.label}>Tipo</Text>
+                        <TouchableOpacity style={styles.selector} onPress={() => setShowTypeSelect(true)}>
+                            <Text>{tipo}</Text>
+                        </TouchableOpacity>
 
-                    <Text style={styles.label}>{tipo === 'AULA' ? 'Data de Início (Referência)' : 'Data e Hora'}</Text>
-                    <TextInput style={styles.input} value={dataHora} onChangeText={setDataHora} placeholder="2025-01-20 14:00" />
+                        <Text style={styles.label}>{tipo === 'AULA' ? 'Data de Início (Opcional)' : 'Data e Hora (Opcional)'}</Text>
+                        <TextInput style={styles.input} value={dataHora} onChangeText={setDataHora} placeholder="2025-01-20 14:00" />
 
-                    {tipo === 'AULA' && (
-                        <>
-                            <Text style={styles.label}>Dias e Horários (Texto)</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Ex: Terças e Quintas às 19h"
-                                value={scheduleText}
-                                onChangeText={setScheduleText}
-                            />
-                        </>
-                    )}
+                        {tipo === 'AULA' && (
+                            <>
+                                <Text style={styles.label}>Dias e Horários (Texto)</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Ex: Terças e Quintas às 19h"
+                                    value={scheduleText}
+                                    onChangeText={setScheduleText}
+                                />
+                            </>
+                        )}
 
-                    <Text style={styles.label}>Professor Responsável</Text>
-                    <TouchableOpacity style={styles.selector} onPress={() => setShowUserSelect(true)}>
-                        <Text style={{ color: professorId ? '#000' : '#888' }}>{getProfessorName()}</Text>
-                    </TouchableOpacity>
+                        <Text style={styles.label}>Coordenador (Responsável)</Text>
+                        <TouchableOpacity style={styles.selector} onPress={() => setShowCoordenadorSelect(true)}>
+                            <Text style={{ color: coordenadorId ? '#000' : '#888' }}>{getCoordenadorName()}</Text>
+                        </TouchableOpacity>
+
+                        <Text style={styles.label}>Professores Auxiliares</Text>
+                        <TouchableOpacity style={styles.selector} onPress={() => setShowProfessoresSelect(true)}>
+                            <Text style={{ color: professoresIds.length > 0 ? '#000' : '#888' }}>{getProfessoresNames()}</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
 
                     <View style={styles.modalButtons}>
                         <TouchableOpacity style={[styles.btn, styles.btnCancel]} onPress={() => setModalVisible(false)}>
@@ -274,7 +287,7 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                     </View>
                 </View>
 
-                {/* Sub Modals (Type/User) remain same */}
+                {/* Type Modal */}
                 <Modal visible={showTypeSelect} transparent animationType="fade">
                     <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowTypeSelect(false)}>
                         <View style={styles.selectBox}>
@@ -287,20 +300,44 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                     </TouchableOpacity>
                 </Modal>
 
-                <Modal visible={showUserSelect} animationType="slide">
+                {/* Coordenador Select Only */}
+                <Modal visible={showCoordenadorSelect} animationType="slide">
                     <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Selecione o Professor</Text>
+                        <Text style={styles.modalTitle}>Selecione o Coordenador</Text>
                         <ScrollView>
                             {allUsers.map(u => (
-                                <TouchableOpacity key={u.id} style={styles.userItem} onPress={() => { setProfessorId(u.id); setShowUserSelect(false); }}>
+                                <TouchableOpacity key={u.id} style={styles.userItem} onPress={() => { setCoordenadorId(u.id); setShowCoordenadorSelect(false); }}>
                                     <Text style={styles.userName}>{u.nome}</Text>
                                     <Text style={styles.userRole}>{u.tipo}</Text>
+                                    {coordenadorId === u.id && <Ionicons name="checkmark" size={20} color="green" />}
                                 </TouchableOpacity>
                             ))}
-                            {allUsers.length === 0 && <Text style={{ textAlign: 'center', marginTop: 20 }}>Nenhum STAFF/ADMIN encontrado.</Text>}
                         </ScrollView>
-                        <TouchableOpacity style={[styles.btn, styles.btnCancel, { marginTop: 20 }]} onPress={() => setShowUserSelect(false)}>
+                        <TouchableOpacity style={[styles.btn, styles.btnCancel, { marginTop: 20 }]} onPress={() => setShowCoordenadorSelect(false)}>
                             <Text style={styles.btnText}>Fechar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </Modal>
+
+                {/* Professors Select Multi */}
+                <Modal visible={showProfessoresSelect} animationType="slide">
+                    <View style={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Selecione Professores</Text>
+                        <ScrollView>
+                            {allUsers.map(u => (
+                                <TouchableOpacity key={u.id} style={styles.userItem} onPress={() => toggleProfessor(u.id)}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <View>
+                                            <Text style={styles.userName}>{u.nome}</Text>
+                                            <Text style={styles.userRole}>{u.tipo}</Text>
+                                        </View>
+                                        {professoresIds.includes(u.id) && <Ionicons name="checkmark-circle" size={24} color="green" />}
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                        <TouchableOpacity style={[styles.btn, styles.btnSave, { marginTop: 20 }]} onPress={() => setShowProfessoresSelect(false)}>
+                            <Text style={styles.btnText}>Concluir</Text>
                         </TouchableOpacity>
                     </View>
                 </Modal>
