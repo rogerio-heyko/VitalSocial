@@ -430,7 +430,7 @@ async function main() {
                 dataToInsert.push({
                     dia: dayNumber,
                     trechosBiblicos: reading,
-                    reflexao: \`\${currentFase}\\n\${currentFoco}\\n\\nReflita sobre a leitura de hoje e anote o que Deus falar ao seu coração.\`
+                    reflexao: `${currentFase}\n${currentFoco}\n\nReflita sobre a leitura de hoje e anote o que Deus falar ao seu coração.`
                 });
             }
         }
@@ -441,7 +441,7 @@ async function main() {
             data: dataToInsert,
             skipDuplicates: true
         });
-        console.log(\`\\n✅ Sucesso! Foram cadastrados \${result.count} planos de leitura diários.\`);
+        console.log(`\n✅ Sucesso! Foram cadastrados ${result.count} planos de leitura diários.`);
     } catch (e) {
         console.error('Erro ao preencher tabela PlanoLeitura:', e);
     }
