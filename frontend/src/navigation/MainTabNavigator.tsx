@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, View, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/HomeScreen';
 import ReadingPlanScreen from '../screens/ReadingPlanScreen';
 import DonationScreen from '../screens/DonationScreen';
@@ -42,6 +43,8 @@ const CustomTabBarButton = ({ children, onPress }: any) => (
 );
 
 export default function MainTabNavigator() {
+    const insets = useSafeAreaInsets();
+
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -74,8 +77,8 @@ export default function MainTabNavigator() {
                 tabBarStyle: {
                     borderTopWidth: 0,
                     elevation: 10,
-                    height: Platform.OS === 'android' ? 70 : 90, // Adjusted height
-                    paddingBottom: Platform.OS === 'android' ? 10 : 30, // Adjusted padding
+                    height: Platform.OS === 'android' ? 60 + insets.bottom : 70 + insets.bottom,
+                    paddingBottom: Math.max(insets.bottom, 10), // Ensures at least 10px even if inset is 0
                     paddingTop: 10,
                     backgroundColor: '#fff',
                 },
