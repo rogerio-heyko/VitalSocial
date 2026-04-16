@@ -11,6 +11,7 @@ datasource db {
 enum TipoUsuario {
   DOADOR
   BENEFICIARIO
+  LIDER_SOCIAL
   STAFF
   ADMIN
   INDEFINIDO // Novo usuário, ainda não escolheu
@@ -20,6 +21,12 @@ enum TipoAtividade {
   AULA
   CURSO
   EVENTO
+}
+
+enum StatusInscricao {
+  CONFIRMADA
+  RESERVA
+  CANCELADA
 }
 
 model Usuario {
@@ -60,7 +67,9 @@ model Usuario {
 
   inscricoes         Inscricao[]
   atividadesMinistradas Atividade[] // Professor
-  turmasResponsavel  Turma[]       // Professor de Turma
+  turmasResponsavel  Turma[]       @relation("TurmaResponsavel")
+  turmasParticipadas Turma[]      @relation("TurmaProfessores")
+  projetosResponsavel Projeto[]    @relation("ProjetoResponsavel")
   leiturasConcluidas LeituraUsuario[]
   doacoes            Doacao[]
   postsForum         ForumPost[]
@@ -104,6 +113,8 @@ model Atividade {
   titulo               String
   tipo                 TipoAtividade
   dataHora             DateTime
+  endereco             String?       // Endereço completo
+  fusoHorario          String        @default("UTC-3") // Ex: "UTC-3", "UTC+1"
   professorResponsavelId String
   professor            Usuario       @relation(fields: [professorResponsavelId], references: [id])
   
@@ -125,7 +136,11 @@ model Turma {
   atividade            Atividade     @relation(fields: [atividadeId], references: [id])
   
   professorResponsavelId String
-  professor            Usuario       @relation(fields: [professorResponsavelId], references: [id])
+  professor            Usuario       @relation("TurmaResponsavel", fields: [professorResponsavelId], references: [id])
+  
+  professores          Usuario[]     @relation("TurmaProfessores")
+
+  vagasTotais          Int           @default(0) // 0 = ilimitado
 
   inscricoes           Inscricao[]
   relatorios           RelatorioAula[]
@@ -138,6 +153,7 @@ model Inscricao {
   turmaId     String? // Opcional, pois pode se inscrever na atividade geral antes de ser alocado
   turma       Turma?    @relation(fields: [turmaId], references: [id])
   dataInscricao DateTime @default(now())
+  status        StatusInscricao @default(CONFIRMADA)
 
   aluno       Usuario   @relation(fields: [alunoId], references: [id])
   atividade   Atividade @relation(fields: [atividadeId], references: [id])
@@ -187,6 +203,7 @@ model RelatorioAula {
   dataAula    DateTime
   descricao   String
   fotoUrl     String?
+  videoUrl    String?
   criadoEm    DateTime @default(now())
   
   presencas   Presenca[]
@@ -224,6 +241,9 @@ model Projeto {
   nome        String
   descricao   String?
   instituicao String? // Nome da instituição que gerencia o projeto
+  
+  responsavelId String?
+  responsavel   Usuario? @relation("ProjetoResponsavel", fields: [responsavelId], references: [id])
   
   // Chaves de Doação Específicas
   chavePix    String?

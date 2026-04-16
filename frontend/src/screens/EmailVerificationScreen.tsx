@@ -43,7 +43,7 @@ export default function EmailVerificationScreen() {
             <Text style={styles.email}>{email}</Text>
 
             <Text style={styles.instruction}>
-                Copie o código que chegou no seu e-mail (verifique o console do backend se estiver testando localmente) e cole abaixo:
+                Copie o código que chegou no seu e-mail e cole abaixo:
             </Text>
 
             <TextInput

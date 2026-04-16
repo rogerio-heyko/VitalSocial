@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  postgres:
+  vitalsocial-postgres:
     image: postgres:15-alpine
     container_name: vital_social_postgres
     environment:
@@ -9,33 +9,28 @@ services:
       POSTGRES_PASSWORD: vital_password
       POSTGRES_DB: vital_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - vital_net
+      - vitalsocial_postgres_data:/var/lib/postgresql/data
 
-  backend:
+  vitalsocial-backend:
     build: ./backend
     container_name: vital_social_backend
     ports:
-      - "3001:3000"
+      - "3002:3000"
     volumes:
       - ./backend:/app
       - /app/node_modules
     environment:
-      DATABASE_URL: postgres://vital_user:vital_password@postgres:5432/vital_db
+      DATABASE_URL: postgres://vital_user:vital_password@vitalsocial-postgres:5432/vital_db
       PORT: 3000
       JWT_SECRET: changeme_in_production
     depends_on:
-      - postgres
+      - vitalsocial-postgres
     command: npm run dev
-    networks:
-      - vital_net
 
-  frontend:
+  vitalsocial-frontend:
     image: node:20
-    container_name: vital_social_frontend
     working_dir: /app
     volumes:
       - ./frontend:/app
@@ -43,18 +38,12 @@ services:
       - "8081:8081"
       - "19000:19000"
       - "19001:19001"
-      - "19002:19002"
     environment:
       - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
-      - REACT_NATIVE_PACKAGER_HOSTNAME=10.0.0.198 # User's LAN IP
+      - REACT_NATIVE_PACKAGER_HOSTNAME=10.0.0.198
+    stdin_open: true
+    tty: true
     command: npx expo start --lan
 
-
-    networks:
-      - vital_net
-
 volumes:
-  postgres_data:
-
-networks:
-  vital_net:
+  vitalsocial_postgres_data:

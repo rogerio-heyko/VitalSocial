@@ -6,14 +6,26 @@ const prisma = new PrismaClient();
 
 export class ActivityController {
     async criar(req: Request, res: Response) {
-        const { id } = req.user;
-        const { titulo, tipo, dataHora, projetoId, professorResponsavelId } = req.body;
+        const { id: usuarioId } = req.user;
+        const { titulo, tipo, dataHora, projetoId, professorResponsavelId, endereco, fusoHorario } = req.body;
 
-        // Verificar se usuário é STAFF ou ADMIN
-        const usuario = await prisma.usuario.findUnique({ where: { id } });
+        if (!projetoId) {
+            throw new AppError('O ID do projeto é obrigatório.');
+        }
 
-        if (!usuario || (usuario.tipo !== 'STAFF' && usuario.tipo !== 'ADMIN')) {
-            throw new AppError('Permissão negada. Apenas Staff/Admin podem criar atividades.', 403);
+        // Verificar permissão
+        const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+        const projeto = await prisma.projeto.findUnique({ where: { id: projetoId } });
+
+        if (!projeto) {
+            throw new AppError('Projeto não encontrado.', 404);
+        }
+
+        const isAdmin = usuario?.tipo === 'ADMIN';
+        const isLiderResponsavel = usuario?.tipo === 'LIDER_SOCIAL' && projeto.responsavelId === usuarioId;
+
+        if (!isAdmin && !isLiderResponsavel) {
+            throw new AppError('Permissão negada. Você não é o Líder Social deste projeto.', 403);
         }
 
         if (!titulo || !tipo || !dataHora) {
@@ -25,30 +37,26 @@ export class ActivityController {
             throw new AppError(`Tipo inválido. Tipos permitidos: ${tiposValidos.join(', ')}`);
         }
 
-        const data: any = {
-            titulo,
-            tipo,
-            dataHora: new Date(dataHora),
-            professorResponsavelId: professorResponsavelId || id,
-        };
-
-        if (projetoId) {
-            data.projetoId = projetoId;
-        }
-
         const atividade = await prisma.atividade.create({
-            data
+            data: {
+                titulo,
+                tipo,
+                dataHora: new Date(dataHora),
+                endereco,
+                fusoHorario: fusoHorario || 'UTC-3',
+                projetoId,
+                professorResponsavelId: professorResponsavelId || usuarioId,
+            }
         });
 
         return res.status(201).json(atividade);
     }
 
     async listar(req: Request, res: Response) {
-        // Filtros opcionais podem ser adicionados aqui via query params
         const atividades = await prisma.atividade.findMany({
             include: {
                 professor: {
-                    select: { nome: true, email: true }
+                    select: { nome: true, email: true, id: true }
                 },
                 projeto: {
                     select: { nome: true }
@@ -61,6 +69,73 @@ export class ActivityController {
         });
 
         return res.json(atividades);
+    }
+
+    async atualizar(req: Request, res: Response) {
+        const { id: usuarioId } = req.user;
+        const { id: atividadeId } = req.params;
+        const { titulo, tipo, dataHora, professorResponsavelId, endereco, fusoHorario } = req.body;
+
+        const atividade = await prisma.atividade.findUnique({
+            where: { id: atividadeId },
+            include: { projeto: true }
+        });
+
+        if (!atividade) {
+            throw new AppError('Atividade não encontrada.', 404);
+        }
+
+        // Verificar permissão
+        const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+        const isAdmin = usuario?.tipo === 'ADMIN';
+        const isLiderResponsavel = usuario?.tipo === 'LIDER_SOCIAL' && atividade.projeto?.responsavelId === usuarioId;
+
+        if (!isAdmin && !isLiderResponsavel) {
+            throw new AppError('Permissão negada para editar esta atividade.', 403);
+        }
+
+        const updated = await prisma.atividade.update({
+            where: { id: atividadeId },
+            data: {
+                titulo,
+                tipo,
+                dataHora: dataHora ? new Date(dataHora) : undefined,
+                professorResponsavelId,
+                endereco,
+                fusoHorario
+            }
+        });
+
+        return res.json(updated);
+    }
+
+    async excluir(req: Request, res: Response) {
+        const { id: usuarioId } = req.user;
+        const { id: atividadeId } = req.params;
+
+        const atividade = await prisma.atividade.findUnique({
+            where: { id: atividadeId },
+            include: { projeto: true }
+        });
+
+        if (!atividade) {
+            throw new AppError('Atividade não encontrada.', 404);
+        }
+
+        // Verificar permissão
+        const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+        const isAdmin = usuario?.tipo === 'ADMIN';
+        const isLiderResponsavel = usuario?.tipo === 'LIDER_SOCIAL' && atividade.projeto?.responsavelId === usuarioId;
+
+        if (!isAdmin && !isLiderResponsavel) {
+            throw new AppError('Permissão negada para excluir esta atividade.', 403);
+        }
+
+        // Deletar dependências (opcional, dependendo se há turmas ou inscrições)
+        // Aqui vamos apenas deletar a atividade. Se o Prisma tiver restrição de FK, ele vai avisar.
+        await prisma.atividade.delete({ where: { id: atividadeId } });
+
+        return res.status(204).send();
     }
 
     async listarPorProjeto(req: Request, res: Response) {
@@ -104,10 +179,27 @@ export class ActivityController {
             throw new AppError('Você já está inscrito nesta atividade.');
         }
 
+        // Check availability in classes
+        const turmas = await prisma.turma.findMany({
+            where: { atividadeId },
+            include: { _count: { select: { inscricoes: { where: { status: 'CONFIRMADA' } } } } }
+        });
+
+        let status: 'CONFIRMADA' | 'RESERVA' = 'RESERVA';
+        
+        // If there are classes, check if any has space
+        if (turmas.length > 0) {
+            const temVaga = turmas.some(t => t.vagasTotais === 0 || t._count.inscricoes < t.vagasTotais);
+            if (temVaga) {
+                status = 'CONFIRMADA';
+            }
+        }
+
         const inscricao = await prisma.inscricao.create({
             data: {
                 alunoId: usuarioId,
-                atividadeId
+                atividadeId,
+                status
             }
         });
 

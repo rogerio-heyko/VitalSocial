@@ -22,7 +22,6 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "usesCleartextTraffic": true,
       "package": "com.heyko.vitalsocial"
     },
     "web": {
@@ -32,6 +31,10 @@
       "eas": {
         "projectId": "1fd8facd-9d31-43d7-905a-83c79a52dcac"
       }
-    }
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker",
+      "expo-font"
+    ]
   }
 }

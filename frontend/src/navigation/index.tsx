@@ -45,6 +45,7 @@ export type RootStackParamList = {
     ActivityDetails: { activityId: string };
     ProfessorDashboard: undefined;
     ClassReport: { atividadeId: string; titulo: string };
+    AdminWaitlist: undefined;
     MainTabs: undefined;
 };
 
@@ -98,6 +99,7 @@ export default function Routes() {
                             {/* Professor Flow */}
                             <Stack.Screen name="ProfessorDashboard" component={require('../screens/ProfessorDashboardScreen').default} options={{ title: 'Minhas Turmas' }} />
                             <Stack.Screen name="ClassReport" component={require('../screens/ClassReportScreen').default} options={{ title: 'Relatório de Aula' }} />
+                            <Stack.Screen name="AdminWaitlist" component={require('../screens/AdminWaitlistScreen').default} options={{ title: 'Fila de Espera' }} />
                         </Stack.Group>
                     )
                 ) : (

@@ -14,17 +14,22 @@ export class ClassReportController {
         // Logic to save photo URL
         // If photo was uploaded via Multer, req.file.filename will be available
         let fotoUrl = null;
+        let videoUrl = null;
         if (foto) {
-            // Assuming static serve from /uploads
-            // We'll construct the full URL later or just store the filename
-            fotoUrl = foto.filename;
+            // Check if it's image or video
+            if (foto.mimetype.startsWith('video/')) {
+                videoUrl = foto.filename;
+            } else {
+                fotoUrl = foto.filename;
+            }
         }
 
         const data: any = {
             atividadeId,
             dataAula: new Date(dataAula),
             descricao,
-            fotoUrl
+            fotoUrl,
+            videoUrl
         };
         if (turmaId) data.turmaId = turmaId;
 
@@ -103,6 +108,7 @@ export class ClassReportController {
             data: r.dataAula,
             descricao: r.descricao,
             fotoUrl: r.fotoUrl ? `http://10.0.2.2:3000/uploads/${r.fotoUrl}` : null,
+            videoUrl: r.videoUrl ? `http://10.0.2.2:3000/uploads/${r.videoUrl}` : null,
         }));
 
         return res.json(feed);

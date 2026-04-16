@@ -6,10 +6,10 @@ class TurmaController {
 
     // Criar Turma
     async create(req: Request, res: Response) {
-        const { nome, diasHorarios, atividadeId, professorResponsavelId } = req.body;
+        const { nome, diasHorarios, atividadeId, professorResponsavelId, professorIds, vagasTotais } = req.body;
 
         if (!nome || !atividadeId || !professorResponsavelId) {
-            throw new AppError('Nome, Atividade e Professor são obrigatórios.');
+            throw new AppError('Nome, Atividade e Professor Responsável são obrigatórios.');
         }
 
         const turma = await prisma.turma.create({
@@ -17,7 +17,11 @@ class TurmaController {
                 nome,
                 diasHorarios,
                 atividadeId,
-                professorResponsavelId
+                professorResponsavelId,
+                vagasTotais: Number(vagasTotais) || 0,
+                professores: {
+                    connect: professorIds ? professorIds.map((id: string) => ({ id })) : [{ id: professorResponsavelId }]
+                }
             }
         });
 
@@ -32,6 +36,7 @@ class TurmaController {
             where: { atividadeId },
             include: {
                 professor: { select: { nome: true } },
+                professores: { select: { id: true, nome: true } },
                 _count: { select: { inscricoes: true } }
             }
         });
@@ -46,7 +51,8 @@ class TurmaController {
         const turma = await prisma.turma.findUnique({
             where: { id },
             include: {
-                professor: { select: { nome: true, id: true } },
+                professor: { select: { id: true, nome: true } },
+                professores: { select: { id: true, nome: true } },
                 atividade: { select: { titulo: true } },
                 inscricoes: {
                     include: {
@@ -68,7 +74,12 @@ class TurmaController {
         const { id } = req.user;
 
         const turmas = await prisma.turma.findMany({
-            where: { professorResponsavelId: id },
+            where: {
+                OR: [
+                    { professorResponsavelId: id },
+                    { professores: { some: { id } } }
+                ]
+            },
             include: {
                 atividade: { select: { titulo: true, tipo: true } },
                 _count: { select: { inscricoes: true } }

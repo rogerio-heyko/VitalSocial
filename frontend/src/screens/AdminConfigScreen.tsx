@@ -40,6 +40,14 @@ export default function AdminConfigScreen() {
 
             <TouchableOpacity
                 style={styles.card}
+                onPress={() => navigation.navigate('AdminWaitlist')}
+            >
+                <Text style={styles.cardTitle}>Lista de Espera</Text>
+                <Text style={styles.cardDesc}>Gerenciar beneficiários no cadastro de reserva</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                style={styles.card}
                 onPress={() => { }} // Futuro: Relatórios
             >
                 <Text style={styles.cardTitle}>{t('reportsAdmin')}</Text>

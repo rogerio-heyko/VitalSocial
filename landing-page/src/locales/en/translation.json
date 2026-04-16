@@ -1,0 +1,69 @@
+{
+  "nav": {
+    "downloadApp": "Download App",
+    "language": "Language"
+  },
+  "hero": {
+    "headline": "Where technology unites the world to change realities.",
+    "slogan": "\"Connecting hearts, building futures.\"",
+    "subheadline": "Vital Social is the global platform that eliminates borders between those who want to help, those who need to manage, and those who seek support. A complete ecosystem to transform social impact anywhere on the planet.",
+    "cta": {
+      "ngo": "Register your NGO",
+      "donate": "Make a Donation",
+      "find": "Find Nearby Projects"
+    }
+  },
+  "vision": {
+    "title": "A global network that leaves no one behind.",
+    "text": "Good intentions need good tools. Many NGOs struggle with disorganization, donors suffer from a lack of transparency, and communities miss opportunities due to lack of information. Vital Social was born to be the technological bridge that unites these three worlds, ensuring that help arrives with precision, transparency, and global scale."
+  },
+  "pillars": {
+    "title": "Impact at Scale",
+    "ngo": {
+      "title": "For NGO Leaders",
+      "subtitle": "The Management System your Cause Deserves",
+      "description": "Leave amateurism behind and win the world.",
+      "features": [
+        { "title": "Borderless Management", "text": "Organize volunteers, track attendance, and manage social projects of any size." },
+        { "title": "Global Showcase", "text": "Make your NGO visible to donors on all continents and attract international partnerships." },
+        { "title": "Metrics that Convince", "text": "Turn sweat into data. Generate professional impact reports and prove the value of your cause." }
+      ]
+    },
+    "donor": {
+      "title": "For Donors",
+      "subtitle": "Your Generosity with Total Traceability",
+      "description": "Change lives anywhere, with the security of knowing where the resources go.",
+      "features": [
+        { "title": "Global Reach", "text": "Find and support serious causes from your neighborhood to anywhere in the world." },
+        { "title": "Transparency in your Hands", "text": "Follow in real-time how your donation is building new futures." },
+        { "title": "Emotional Connection", "text": "Choose projects that resonate with your purpose and receive direct feedback on the impact generated." }
+      ]
+    },
+    "beneficiary": {
+      "title": "For Beneficiaries",
+      "subtitle": "The Support You Seek, Wherever You Are",
+      "description": "The opportunity you need might be on the next street.",
+      "features": [
+        { "title": "Social Geolocation", "text": "Instantly find the projects, courses, and donations closest to you." },
+        { "title": "Access Without Barriers", "text": "Enroll in classes and social programs directly from your phone, simply and quickly." },
+        { "title": "Your Future Starts Here", "text": "Have a direct channel to discover new chances for learning and support in your region." }
+      ]
+    }
+  },
+  "tech": {
+    "title": "Cutting-edge engineering for a human purpose.",
+    "text": "Developed with the most modern software technology (React Native, TypeScript, and Docker), Vital Social is resilient, secure, and global. We created a stable infrastructure so that the world's only concern is helping others."
+  },
+  "footer": {
+    "headline": "Ready to be part of this transformation network?",
+    "subheadline": "Whether managing, donating, or participating, your action is what moves the world.",
+    "slogan": "Vital Social: Connecting hearts, building futures.",
+    "cta": {
+      "registerNgo": "Register my NGO",
+      "explore": "Explore Projects Worldwide",
+      "download": "Download Vital Social (Android)"
+    },
+    "scanQr": "Scan to download the APK now",
+    "rights": "© 2026 Teleios, Vital Social and Nice Winds. All rights reserved."
+  }
+}

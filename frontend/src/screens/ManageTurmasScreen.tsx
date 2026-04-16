@@ -7,7 +7,9 @@ interface Turma {
     id: string;
     nome: string; // "Turma A"
     diasHorarios: string; // "Seg 14:00"
-    professor: { nome: string };
+    vagasTotais: number;
+    professor: { nome: string }; // Lead professor
+    professores: { id: string, nome: string }[]; // All teachers
     _count?: { inscricoes: number };
 }
 
@@ -30,7 +32,9 @@ export default function ManageTurmasScreen({ route, navigation }: any) {
     // Form Data
     const [nome, setNome] = useState('');
     const [diasHorarios, setDiasHorarios] = useState('');
-    const [professorId, setProfessorId] = useState('');
+    const [professorId, setProfessorId] = useState(''); // Lead
+    const [professorIds, setProfessorIds] = useState<string[]>([]); // All
+    const [vagasTotais, setVagasTotais] = useState('0');
 
     const [showUserSelect, setShowUserSelect] = useState(false);
 
@@ -67,6 +71,8 @@ export default function ManageTurmasScreen({ route, navigation }: any) {
         setNome('');
         setDiasHorarios('');
         setProfessorId('');
+        setProfessorIds([]);
+        setVagasTotais('0');
         setModalVisible(true);
     }
 
@@ -81,7 +87,9 @@ export default function ManageTurmasScreen({ route, navigation }: any) {
                 nome,
                 diasHorarios,
                 atividadeId: activityId,
-                professorResponsavelId: professorId
+                professorResponsavelId: professorId,
+                professorIds,
+                vagasTotais: parseInt(vagasTotais) || 0
             });
             Alert.alert("Sucesso", "Turma criada!");
             setModalVisible(false);
@@ -101,7 +109,8 @@ export default function ManageTurmasScreen({ route, navigation }: any) {
             <View>
                 <Text style={styles.cardTitle}>{item.nome}</Text>
                 <Text style={styles.cardSubtitle}>{item.diasHorarios}</Text>
-                <Text style={styles.cardProf}>Prof: {item.professor.nome}</Text>
+                <Text style={styles.cardVagas}>Capacidade: {item.vagasTotais === 0 ? 'Ilimitada' : `${item.vagasTotais} vagas`}</Text>
+                <Text style={styles.cardProf}>Professores: {item.professores.map(p => p.nome).join(', ')}</Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
                 <Text style={styles.cardSubs}>{item._count ? item._count.inscricoes : 0} alunos</Text>
@@ -142,9 +151,16 @@ export default function ManageTurmasScreen({ route, navigation }: any) {
                     <Text style={styles.label}>Dias/Horários (Opcional)</Text>
                     <TextInput style={styles.input} value={diasHorarios} onChangeText={setDiasHorarios} placeholder="Ex: Seg/Qua 10:00" />
 
-                    <Text style={styles.label}>Professor Responsável</Text>
+                    <Text style={styles.label}>Capacidade (Vagas)</Text>
+                    <TextInput style={styles.input} value={vagasTotais} onChangeText={setVagasTotais} keyboardType="numeric" placeholder="0 = Ilimitada" />
+
+                    <Text style={styles.label}>Professores (Selecione um ou mais)</Text>
                     <TouchableOpacity style={styles.selector} onPress={() => setShowUserSelect(true)}>
-                        <Text style={{ color: professorId ? '#000' : '#888' }}>{getProfessorName()}</Text>
+                        <Text style={{ color: professorIds.length > 0 ? '#000' : '#888' }}>
+                            {professorIds.length > 0 
+                                ? `${professorIds.length} selecionado(s)` 
+                                : "Selecione os Professores"}
+                        </Text>
                     </TouchableOpacity>
 
                     <View style={styles.modalButtons}>
@@ -162,12 +178,30 @@ export default function ManageTurmasScreen({ route, navigation }: any) {
                     <View style={styles.modalContainer}>
                         <Text style={styles.modalTitle}>Selecione o Professor</Text>
                         <ScrollView>
-                            {allUsers.map(u => (
-                                <TouchableOpacity key={u.id} style={styles.userItem} onPress={() => { setProfessorId(u.id); setShowUserSelect(false); }}>
-                                    <Text style={styles.userName}>{u.nome}</Text>
-                                    <Text style={styles.userRole}>{u.tipo}</Text>
-                                </TouchableOpacity>
-                            ))}
+                            {allUsers.map(u => {
+                                const isSelected = professorIds.includes(u.id);
+                                return (
+                                    <TouchableOpacity 
+                                        key={u.id} 
+                                        style={[styles.userItem, isSelected && styles.userItemActive]} 
+                                        onPress={() => { 
+                                            if (isSelected) {
+                                                setProfessorIds(prev => prev.filter(id => id !== u.id));
+                                                if (professorId === u.id) setProfessorId('');
+                                            } else {
+                                                setProfessorIds(prev => [...prev, u.id]);
+                                                if (!professorId) setProfessorId(u.id); // Default lead to first selected
+                                            }
+                                        }}
+                                    >
+                                        <View>
+                                            <Text style={styles.userName}>{u.nome}</Text>
+                                            <Text style={styles.userRole}>{u.tipo} {u.id === professorId ? '(Principal)' : ''}</Text>
+                                        </View>
+                                        {isSelected && <Ionicons name="checkmark-circle" size={24} color="#5cb85c" />}
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </ScrollView>
                         <TouchableOpacity style={[styles.btn, styles.btnCancel, { marginTop: 20 }]} onPress={() => setShowUserSelect(false)}>
                             <Text style={styles.btnText}>Fechar</Text>
@@ -186,7 +220,8 @@ const styles = StyleSheet.create({
     card: { backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', shadowOpacity: 0.1, elevation: 2 },
     cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
     cardSubtitle: { color: '#666', marginTop: 2 },
-    cardProf: { color: '#444', marginTop: 5, fontStyle: 'italic', fontSize: 12 },
+    cardVagas: { fontSize: 12, color: '#4a90e2', marginTop: 2 },
+    cardProf: { color: '#444', marginTop: 5, fontStyle: 'italic', fontSize: 13 },
     cardSubs: { fontSize: 12, color: '#888', fontWeight: 'bold' },
     emptyText: { textAlign: 'center', marginTop: 50, color: '#999' },
     fab: { position: 'absolute', right: 20, bottom: 20, backgroundColor: '#4a90e2', width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', elevation: 5 },
@@ -201,7 +236,8 @@ const styles = StyleSheet.create({
     btnCancel: { backgroundColor: '#ccc' },
     btnSave: { backgroundColor: '#5cb85c' },
     btnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-    userItem: { padding: 15, borderBottomWidth: 1, borderColor: '#eee' },
+    userItem: { padding: 15, borderBottomWidth: 1, borderColor: '#eee', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    userItemActive: { backgroundColor: '#f0f9ff' },
     userName: { fontSize: 16, fontWeight: 'bold' },
     userRole: { fontSize: 12, color: '#4a90e2' }
 });

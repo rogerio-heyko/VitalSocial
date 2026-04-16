@@ -1,0 +1,69 @@
+{
+  "nav": {
+    "downloadApp": "Baixar App",
+    "language": "Idioma"
+  },
+  "hero": {
+    "headline": "Onde a tecnologia une o mundo para mudar realidades.",
+    "slogan": "\"Conectando corações, construindo futuros.\"",
+    "subheadline": "O Vital Social é a plataforma global que elimina as fronteiras entre quem quer ajudar, quem precisa gerir e quem busca apoio. Um ecossistema completo para transformar o impacto social em qualquer lugar do planeta.",
+    "cta": {
+      "ngo": "Cadastre sua ONG",
+      "donate": "Faça uma Doação",
+      "find": "Encontre Projetos Próximos"
+    }
+  },
+  "vision": {
+    "title": "Uma rede global que não deixa ninguém para trás.",
+    "text": "Boas intenções precisam de boas ferramentas. Muitas ONGs lutam com a desorganização, doadores sofrem com a falta de transparência e comunidades perdem oportunidades por falta de informação. O Vital Social nasceu para ser a ponte tecnológica que une esses três mundos, garantindo que a ajuda chegue com precisão, transparência e escala mundial."
+  },
+  "pillars": {
+    "title": "O Impacto em Escala",
+    "ngo": {
+      "title": "Para Líderes de ONGs",
+      "subtitle": "O Sistema de Gestão que sua Causa Merece",
+      "description": "Saia do amadorismo e ganhe o mundo.",
+      "features": [
+        { "title": "Gestão Sem Fronteiras", "text": "Organize voluntários, controle frequências e gerencie projetos sociais de qualquer tamanho." },
+        { "title": "Vitrine Global", "text": "Torne sua ONG visível para doadores em todos os continentes e atraia parcerias internacionais." },
+        { "title": "Métricas que Convencem", "text": "Transforme suor em dados. Gere relatórios de impacto profissionais e prove o valor da sua causa." }
+      ]
+    },
+    "donor": {
+      "title": "Para Doadores",
+      "subtitle": "Sua Generosidade com Rastreabilidade Total",
+      "description": "Mude vidas em qualquer lugar, com a segurança de quem sabe para onde o recurso vai.",
+      "features": [
+        { "title": "Alcance Mundial", "text": "Encontre e apoie causas sérias em qualquer canto do mundo." },
+        { "title": "Transparência na Palma da Mão", "text": "Acompanhe em tempo real como sua doação está construindo novos futuros." },
+        { "title": "Conexão Emocional", "text": "Escolha projetos que ressoam com seu propósito e receba feedbacks diretos sobre o impacto gerado." }
+      ]
+    },
+    "beneficiary": {
+      "title": "Para os Beneficiários",
+      "subtitle": "O Suporte que Você Busca, Onde Você Estiver",
+      "description": "A oportunidade que você precisa pode estar na rua ao lado.",
+      "features": [
+        { "title": "Geolocalização Social", "text": "Encontre instantaneamente os projetos, cursos e doações mais próximos de você." },
+        { "title": "Acesso Sem Barreiras", "text": "Inscreva-se em aulas e programas sociais direto pelo celular, de forma simples e rápida." },
+        { "title": "Seu Futuro Começa Aqui", "text": "Tenha um canal direto para descobrir novas chances de aprendizado e suporte na sua região." }
+      ]
+    }
+  },
+  "tech": {
+    "title": "Engenharia de ponta para um propósito humano.",
+    "text": "Desenvolvido com o que há de mais moderno em software (React Native, TypeScript e Docker), o Vital Social é resiliente, seguro e global. Criamos uma infraestrutura estável para que a única preocupação do mundo seja ajudar o próximo."
+  },
+  "footer": {
+    "headline": "Pronto para ser parte desta rede de transformação?",
+    "subheadline": "Seja gerenciando, doando ou participando, sua ação é o que move o mundo.",
+    "slogan": "Vital Social: Conectando corações, construindo futuros.",
+    "cta": {
+      "registerNgo": "Registrar minha ONG",
+      "explore": "Explorar Projetos pelo Mundo",
+      "download": "Baixar o Vital Social (Android)"
+    },
+    "scanQr": "Escaneie para baixar o APK agora",
+    "rights": "© 2026 Teleios, Vital Social e Nice Winds. Todos os direitos reservados."
+  }
+}

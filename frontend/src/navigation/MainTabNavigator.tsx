@@ -2,15 +2,19 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/HomeScreen';
 import ReadingPlanScreen from '../screens/ReadingPlanScreen';
 import DonationScreen from '../screens/DonationScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import GradientHeader from '../components/GradientHeader';
+import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator() {
+    const insets = useSafeAreaInsets();
+
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -31,7 +35,7 @@ export default function MainTabNavigator() {
 
                     return <Ionicons name={iconName} size={size} color={color} />;
                 },
-                tabBarActiveTintColor: '#00A09A', // Brand Teal
+                tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: '#C9D193', // Brand Yellow (muted)
                 header: ({ navigation, route, options }) => {
                     const title = options.title !== undefined ? options.title : route.name;
@@ -40,8 +44,8 @@ export default function MainTabNavigator() {
                 tabBarStyle: {
                     borderTopWidth: 0,
                     elevation: 10,
-                    height: Platform.OS === 'android' ? 120 : 130, // Higher menu to lift icons
-                    paddingBottom: Platform.OS === 'android' ? 50 : 50, // Icons start 72px from bottom (approx with padding)
+                    height: 64 + insets.bottom,
+                    paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
                     paddingTop: 10,
                     backgroundColor: '#fff',
                 }

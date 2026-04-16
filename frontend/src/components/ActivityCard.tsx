@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { colors } from '../theme/colors';
 
 interface ActivityCardProps {
     title: string;
@@ -9,7 +10,7 @@ interface ActivityCardProps {
     onPress: () => void;
 }
 
-export default function ActivityCard({ title, type, date, isEnrolled, onPress }: ActivityCardProps) {
+const ActivityCard = React.memo(function ActivityCard({ title, type, date, isEnrolled, onPress }: ActivityCardProps) {
     const formattedDate = new Date(date).toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: 'short',
@@ -29,6 +30,7 @@ export default function ActivityCard({ title, type, date, isEnrolled, onPress }:
             <TouchableOpacity
                 style={[styles.button, isEnrolled ? styles.buttonOutline : styles.buttonPrimary]}
                 onPress={onPress}
+                activeOpacity={0.8}
             >
                 <Text style={[styles.buttonText, isEnrolled ? styles.textOutline : styles.textPrimary]}>
                     {isEnrolled ? 'Ver Detalhes' : 'Inscrever-se'}
@@ -36,7 +38,9 @@ export default function ActivityCard({ title, type, date, isEnrolled, onPress }:
             </TouchableOpacity>
         </View>
     );
-}
+});
+
+export default ActivityCard;
 
 const styles = StyleSheet.create({
     card: {
@@ -53,13 +57,14 @@ const styles = StyleSheet.create({
     },
     header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
     type: { fontSize: 12, color: '#666', textTransform: 'uppercase', fontWeight: 'bold' },
-    enrolledBadge: { fontSize: 10, color: '#fff', backgroundColor: '#4CAF50', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, overflow: 'hidden' },
+    enrolledBadge: { fontSize: 10, color: '#fff', backgroundColor: colors.success, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, overflow: 'hidden' },
     title: { fontSize: 18, fontWeight: 'bold', marginBottom: 4, color: '#333' },
     date: { fontSize: 14, color: '#666', marginBottom: 16 },
-    button: { paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
-    buttonPrimary: { backgroundColor: '#000' },
-    buttonOutline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#000' },
+    button: { minHeight: 48, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+    buttonPrimary: { backgroundColor: colors.primary },
+    buttonOutline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.primary },
     buttonText: { fontWeight: '600' },
     textPrimary: { color: '#fff' },
-    textOutline: { color: '#000' }
+    textOutline: { color: colors.primary }
 });
+

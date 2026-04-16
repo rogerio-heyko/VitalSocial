@@ -6,7 +6,7 @@ class ProjectController {
 
     // Criar Projeto (Admin)
     async create(req: Request, res: Response) {
-        const { nome, descricao, instituicao, chavePix, walletBtc, walletEth, walletUsdt } = req.body;
+        const { nome, descricao, instituicao, chavePix, responsavelId, walletBtc, walletEth, walletUsdt } = req.body;
 
         if (!nome) {
             throw new AppError('O nome do projeto é obrigatório.');
@@ -18,6 +18,7 @@ class ProjectController {
                 descricao,
                 instituicao,
                 chavePix,
+                responsavelId,
                 walletBtc,
                 walletEth,
                 walletUsdt
@@ -30,6 +31,11 @@ class ProjectController {
     // Listar Projetos (Admin - Todos)
     async listAll(req: Request, res: Response) {
         const projetos = await prisma.projeto.findMany({
+            include: {
+                responsavel: {
+                    select: { id: true, nome: true, email: true }
+                }
+            },
             orderBy: { criadoEm: 'desc' }
         });
         return res.json(projetos);

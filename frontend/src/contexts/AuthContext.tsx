@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { DeviceEventEmitter } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import api from '../services/api';
 
@@ -24,7 +25,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
+    async function signOut() {
+        await SecureStore.deleteItemAsync('teleios_token');
+        await SecureStore.deleteItemAsync('teleios_user');
+        api.defaults.headers.Authorization = null;
+        setUser(null);
+    }
+
     useEffect(() => {
+        const subscription = DeviceEventEmitter.addListener('auth:logout', () => {
+            signOut();
+        });
+
         async function loadStorageData() {
             const storedToken = await SecureStore.getItemAsync('teleios_token');
             const storedUser = await SecureStore.getItemAsync('teleios_user');
@@ -37,6 +49,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         loadStorageData();
+
+        return () => subscription.remove();
     }, []);
 
     async function signIn(email: string, senha: string) {
@@ -54,13 +68,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     async function signUp(nome: string, email: string, senha: string) {
         await api.post('/auth/registrar', { nome, email, senha });
         // Optional: automatically sign in after sign up
-    }
-
-    async function signOut() {
-        await SecureStore.deleteItemAsync('teleios_token');
-        await SecureStore.deleteItemAsync('teleios_user');
-        api.defaults.headers.Authorization = null;
-        setUser(null);
     }
 
     async function refreshUser() {

@@ -123,7 +123,7 @@ function testFetch(url) {
                 console.log(`HTTP Error: ${res.statusCode}`);
                 console.log('Response:', data);
             } else {
-                try {
+                try {o
                     const json = JSON.parse(data);
                     if (json.text) {
                         console.log('✅ Fetch Success! Text preview:', json.text.substring(0, 50) + '...');

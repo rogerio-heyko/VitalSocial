@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import { Video, ResizeMode } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../services/api';
 import { RootStackParamList } from '../navigation';
@@ -23,7 +24,8 @@ export default function ClassReportScreen() {
     const { atividadeId, turmaId, titulo } = route.params as any; // Cast to any to accept turmaId
 
     const [description, setDescription] = useState('');
-    const [image, setImage] = useState<string | null>(null);
+    const [mediaUri, setMediaUri] = useState<string | null>(null);
+    const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
     const [students, setStudents] = useState<Inscricao[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -64,16 +66,17 @@ export default function ClassReportScreen() {
         }
     }
 
-    const pickImage = async () => {
+    const pickMedia = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
             allowsEditing: true,
             aspect: [4, 3],
             quality: 0.7,
         });
 
         if (!result.canceled) {
-            setImage(result.assets[0].uri);
+            setMediaUri(result.assets[0].uri);
+            setMediaType(result.assets[0].type === 'video' ? 'video' : 'image');
         }
     };
 
@@ -85,13 +88,15 @@ export default function ClassReportScreen() {
         }
 
         const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
             allowsEditing: true,
             aspect: [4, 3],
             quality: 0.7,
         });
 
         if (!result.canceled) {
-            setImage(result.assets[0].uri);
+            setMediaUri(result.assets[0].uri);
+            setMediaType(result.assets[0].type === 'video' ? 'video' : 'image');
         }
     }
 
@@ -100,8 +105,8 @@ export default function ClassReportScreen() {
             Alert.alert('Atenção', 'Escreva um breve texto sobre a aula.');
             return;
         }
-        if (!image) {
-            Alert.alert('Atenção', 'É obrigatório incluir uma foto da aula.');
+        if (!mediaUri) {
+            Alert.alert('Atenção', 'É obrigatório incluir uma foto ou vídeo da aula.');
             return;
         }
 
@@ -114,20 +119,24 @@ export default function ClassReportScreen() {
             formData.append('descricao', description);
 
             // Build attendance list
-            // Each item: { inscricaoId, presente }
             const presencas = students.map(s => ({
                 inscricaoId: s.id,
                 presente: s.presente
             }));
             formData.append('presencas', JSON.stringify(presencas));
 
-            // Append Image
-            const filename = image.split('/').pop();
+            // Append Media
+            const filename = mediaUri.split('/').pop();
             const match = /\.(\w+)$/.exec(filename || '');
-            const type = match ? `image/${match[1]}` : `image`;
+            let type = 'image/jpeg';
+            if (mediaType === 'video') {
+                type = match ? `video/${match[1]}` : `video/mp4`;
+            } else {
+                type = match ? `image/${match[1]}` : `image/jpeg`;
+            }
 
             // @ts-ignore
-            formData.append('foto', { uri: image, name: filename, type });
+            formData.append('foto', { uri: mediaUri, name: filename, type });
 
             await api.post('/relatorios', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -158,20 +167,32 @@ export default function ClassReportScreen() {
             <View className="p-4">
                 <Text className="text-xl font-bold text-gray-800 mb-4">{titulo}</Text>
 
-                <Text className="text-base font-semibold text-gray-700 mb-2">1. Foto da Aula</Text>
+                <Text className="text-base font-semibold text-gray-700 mb-2">1. Mídia da Aula (Foto ou Vídeo)</Text>
                 <View className="flex-row mb-4">
                     <TouchableOpacity onPress={takePhoto} className="bg-teal-600 p-3 rounded-lg mr-2 flex-1 items-center">
                         <Ionicons name="camera" size={24} color="#fff" />
                         <Text className="text-white mt-1">Câmera</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={pickImage} className="bg-gray-200 p-3 rounded-lg flex-1 items-center">
+                    <TouchableOpacity onPress={pickMedia} className="bg-gray-200 p-3 rounded-lg flex-1 items-center">
                         <Ionicons name="images" size={24} color="#333" />
                         <Text className="text-gray-700 mt-1">Galeria</Text>
                     </TouchableOpacity>
                 </View>
 
-                {image && (
-                    <Image source={{ uri: image }} className="w-full h-48 rounded-lg mb-4" resizeMode="cover" />
+                {mediaUri && mediaType === 'image' && (
+                    <Image source={{ uri: mediaUri }} className="w-full h-48 rounded-lg mb-4" resizeMode="cover" />
+                )}
+
+                {mediaUri && mediaType === 'video' && (
+                    <View className="w-full h-64 rounded-lg overflow-hidden mb-4 bg-black">
+                        <Video
+                            source={{ uri: mediaUri }}
+                            useNativeControls
+                            resizeMode={ResizeMode.CONTAIN}
+                            isLooping={false}
+                            className="w-full h-full"
+                        />
+                    </View>
                 )}
 
                 <Text className="text-base font-semibold text-gray-700 mb-2">2. Resumo da Aula</Text>
