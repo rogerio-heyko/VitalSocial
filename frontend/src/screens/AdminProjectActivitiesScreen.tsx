@@ -58,6 +58,9 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [showTypeSelect, setShowTypeSelect] = useState(false);
+    const [showTzSelect, setShowTzSelect] = useState(false);
+    const [showCoordenadorSelect, setShowCoordenadorSelect] = useState(false);
+    const [showProfessoresSelect, setShowProfessoresSelect] = useState(false);
     const [showCoordenadorSelect, setShowCoordenadorSelect] = useState(false);
     const [showProfessoresSelect, setShowProfessoresSelect] = useState(false);
     const [showTzSelect, setShowTzSelect] = useState(false);
@@ -219,6 +222,18 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
             newDate.setHours(selectedTime.getHours(), selectedTime.getMinutes());
             setDate(newDate);
         }
+    };
+
+    const getCoordenadorName = () => {
+        if (!coordenadorId) return "Selecione um Responsável";
+        const u = allUsers.find(u => u.id === coordenadorId);
+        return u ? u.nome : "Carregando...";
+    };
+
+    const getProfessoresNames = () => {
+        if (professoresIds.length === 0) return "Nenhum professor auxiliar";
+        const names = allUsers.filter(u => professoresIds.includes(u.id)).map(u => u.nome);
+        return names.join(', ');
     };
 
     const renderActivity = ({ item }: { item: Activity }) => (
@@ -417,6 +432,20 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                         <View style={{ height: 100 }} />
                     </ScrollView>
                 </View>
+
+                <Modal visible={showTzSelect} transparent animationType="fade">
+                    <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowTzSelect(false)}>
+                        <View style={styles.selectBox}>
+                            <ScrollView>
+                                {TIMEZONES.map((tz) => (
+                                    <TouchableOpacity key={tz.value} style={styles.selectItem} onPress={() => { setFusoHorario(tz.value); setShowTzSelect(false); }}>
+                                        <Text style={styles.selectText}>{tz.label}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
 
                 <Modal visible={showTypeSelect} transparent animationType="fade">
                     <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowTypeSelect(false)}>
