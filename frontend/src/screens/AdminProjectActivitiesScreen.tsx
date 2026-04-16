@@ -8,10 +8,11 @@ interface Activity {
     id: string;
     titulo: string;
     tipo: 'AULA' | 'CURSO' | 'EVENTO';
-    dataHora: string;
+    dataHora?: string;
     endereco?: string;
     fusoHorario?: string;
-    professor: { nome: string, id: string };
+    coordenador: { nome: string, id: string };
+    professores?: { nome: string, id: string }[];
     _count?: { inscricoes: number };
 }
 
@@ -37,29 +38,45 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
 
     // Modal & Form
     const [modalVisible, setModalVisible] = useState(false);
-    const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
 
     // Form Data
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [titulo, setTitulo] = useState('');
     const [tipo, setTipo] = useState<'AULA' | 'CURSO' | 'EVENTO'>('AULA');
     const [date, setDate] = useState(new Date());
+    const [useManualDate, setUseManualDate] = useState(false);
+    const [dataHoraText, setDataHoraText] = useState('');
     const [endereco, setEndereco] = useState('');
     const [fusoHorario, setFusoHorario] = useState('UTC-3');
-    const [professorId, setProfessorId] = useState('');
-    
-    // UI Helpers
+    const [coordenadorId, setCoordenadorId] = useState('');
+    const [professoresIds, setProfessoresIds] = useState<string[]>([]);
+    const [scheduleText, setScheduleText] = useState('');
+
+    // UI Helpers / Selection Modals
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [showTypeSelect, setShowTypeSelect] = useState(false);
-    const [showUserSelect, setShowUserSelect] = useState(false);
+    const [showCoordenadorSelect, setShowCoordenadorSelect] = useState(false);
+    const [showProfessoresSelect, setShowProfessoresSelect] = useState(false);
     const [showTzSelect, setShowTzSelect] = useState(false);
 
     useEffect(() => {
         loadActivities();
         loadUsers();
     }, []);
+
+    const getCoordenadorName = () => {
+        const p = allUsers.find(u => u.id === coordenadorId);
+        return p ? p.nome : "Selecione o Coordenador";
+    };
+
+    const getProfessoresNames = () => {
+        if (professoresIds.length === 0) return "Nenhum selecionado";
+        const names = allUsers.filter(u => professoresIds.includes(u.id)).map(u => u.nome);
+        return names.join(', ');
+    };
 
     async function loadActivities() {
         try {
@@ -87,57 +104,75 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
         }
     }
 
-    function openModal(activity?: Activity) {
-        if (activity) {
-            setEditingActivity(activity);
-            setTitulo(activity.titulo);
-            setTipo(activity.tipo);
-            setDate(new Date(activity.dataHora));
-            setEndereco(activity.endereco || '');
-            setFusoHorario(activity.fusoHorario || 'UTC-3');
-            setProfessorId(activity.professor.id);
+    function openModal(item?: any) {
+        if (item) {
+            setEditingId(item.id);
+            setTitulo(item.titulo.split(' (')[0]);
+            const match = item.titulo.match(/\(([^)]+)\)$/);
+            setScheduleText(match ? match[1] : '');
+            setTipo(item.tipo);
+            if (item.dataHora) {
+                const d = new Date(item.dataHora);
+                setDate(d);
+                const iso = d.toISOString();
+                setDataHoraText(`${iso.slice(0, 10)} ${iso.slice(11, 16)}`);
+            } else {
+                setDataHoraText('');
+            }
+            setEndereco(item.endereco || '');
+            setFusoHorario(item.fusoHorario || 'UTC-3');
+            setCoordenadorId(item.coordenador?.id || item.coordenadorId || '');
+            setProfessoresIds(item.professores ? item.professores.map((p: any) => p.id) : []);
         } else {
-            setEditingActivity(null);
+            setEditingId(null);
             setTitulo('');
             setTipo('AULA');
             setDate(new Date());
+            setDataHoraText('');
             setEndereco('');
             setFusoHorario('UTC-3');
-            setProfessorId('');
+            setCoordenadorId('');
+            setProfessoresIds([]);
+            setScheduleText('');
         }
         setModalVisible(true);
     }
 
     async function handleSave() {
-        if (!titulo || !professorId) {
-            Alert.alert("Atenção", "Título e Professor são obrigatórios.");
+        if (!titulo || !coordenadorId) {
+            Alert.alert("Atenção", "Título e Coordenador são obrigatórios.");
             return;
         }
 
         try {
+            const finalDataHora = useManualDate ? (dataHoraText || null) : date.toISOString();
+
             const payload = {
-                titulo,
+                titulo: (tipo === 'AULA' && scheduleText) ? `${titulo} (${scheduleText})` : titulo,
                 tipo,
-                dataHora: date.toISOString(),
+                dataHora: finalDataHora,
                 projetoId: projectId,
-                professorResponsavelId: professorId,
+                coordenadorId,
+                professoresIds,
                 endereco,
                 fusoHorario
             };
 
-            if (editingActivity) {
-                await api.put(`/atividades/${editingActivity.id}`, payload);
+            if (editingId) {
+                await api.put(`/atividades/${editingId}`, payload);
                 Alert.alert("Sucesso", "Atividade atualizada!");
             } else {
                 await api.post('/atividades', payload);
                 Alert.alert("Sucesso", "Atividade criada!");
             }
-            
+
             setModalVisible(false);
+            setEditingId(null);
             loadActivities();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            Alert.alert("Erro", "Falha ao salvar atividade.");
+            const msg = error.response?.data?.message || "Falha ao salvar atividade.";
+            Alert.alert("Erro", msg);
         }
     }
 
@@ -151,12 +186,21 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                     try {
                         await api.delete(`/atividades/${id}`);
                         loadActivities();
+                        Alert.alert("Sucesso", "Atividade excluída.");
                     } catch (error) {
                         Alert.alert("Erro", "Falha ao excluir atividade.");
                     }
                 }
             }
         ]);
+    }
+
+    function toggleProfessor(id: string) {
+        if (professoresIds.includes(id)) {
+            setProfessoresIds(professoresIds.filter(pid => pid !== id));
+        } else {
+            setProfessoresIds([...professoresIds, id]);
+        }
     }
 
     const onDateChange = (event: any, selectedDate?: Date) => {
@@ -175,15 +219,6 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
             newDate.setHours(selectedTime.getHours(), selectedTime.getMinutes());
             setDate(newDate);
         }
-    };
-
-    const getProfessorName = () => {
-        const p = allUsers.find(u => u.id === professorId);
-        return p ? p.nome : "Selecione um Professor";
-    };
-
-    const formatDateTime = (date: Date) => {
-        return `${date.toLocaleDateString()} às ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     };
 
     const renderActivity = ({ item }: { item: Activity }) => (
@@ -210,11 +245,12 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                     </TouchableOpacity>
                 </View>
             </View>
-            
-            <View style={styles.infoRow}>
-                <Ionicons name="calendar-outline" size={14} color="#666" />
-                <Text style={styles.cardInfo}>{new Date(item.dataHora).toLocaleString()} ({item.fusoHorario})</Text>
-            </View>
+            {item.dataHora && (
+                <View style={styles.infoRow}>
+                    <Ionicons name="calendar-outline" size={14} color="#666" />
+                    <Text style={styles.cardInfo}>{new Date(item.dataHora).toLocaleString()} ({item.fusoHorario})</Text>
+                </View>
+            )}
             
             {item.endereco && (
                 <View style={styles.infoRow}>
@@ -225,8 +261,15 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
             
             <View style={styles.infoRow}>
                 <Ionicons name="person-outline" size={14} color="#666" />
-                <Text style={styles.cardInfo}>Prof: {item.professor?.nome}</Text>
+                <Text style={styles.cardInfo}>Coord: {item.coordenador?.nome}</Text>
             </View>
+
+            {item.professores && item.professores.length > 0 && (
+                <View style={styles.infoRow}>
+                    <Ionicons name="people-outline" size={14} color="#666" />
+                    <Text style={styles.cardInfo}>Profs: {item.professores.map((p: any) => p.nome).join(', ')}</Text>
+                </View>
+            )}
 
             {item._count && (
                 <View style={styles.infoRow}>
@@ -266,11 +309,10 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                 ListEmptyComponent={loading ? <ActivityIndicator size="large" color="#4a90e2" style={{ marginTop: 50 }} /> : <Text style={styles.emptyText}>Nenhuma atividade encontrada.</Text>}
             />
 
-            {/* Main Modal */}
             <Modal visible={modalVisible} animationType="slide">
                 <View style={styles.modalContainer}>
                     <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>{editingActivity ? 'Editar Atividade' : 'Nova Atividade'}</Text>
+                        <Text style={styles.modalTitle}>{editingId ? 'Editar Atividade' : 'Nova Atividade'}</Text>
                         <TouchableOpacity onPress={() => setModalVisible(false)}>
                             <Ionicons name="close" size={28} color="#333" />
                         </TouchableOpacity>
@@ -287,22 +329,58 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                         </TouchableOpacity>
 
                         <Text style={styles.label}>Data e Hora</Text>
-                        <View style={{ flexDirection: 'row', gap: 10 }}>
-                            <TouchableOpacity style={[styles.selector, { flex: 1 }]} onPress={() => setShowDatePicker(true)}>
-                                <Text>{date.toLocaleDateString()}</Text>
-                                <Ionicons name="calendar-outline" size={20} color="#666" />
+                        <View style={styles.dateToggle}>
+                            <TouchableOpacity 
+                                style={[styles.dateToggleBtn, !useManualDate && styles.dateToggleBtnActive]} 
+                                onPress={() => setUseManualDate(false)}
+                            >
+                                <Text style={[styles.dateToggleText, !useManualDate && styles.dateToggleTextActive]}>Automático</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[styles.selector, { flex: 1 }]} onPress={() => setShowTimePicker(true)}>
-                                <Text>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-                                <Ionicons name="time-outline" size={20} color="#666" />
+                            <TouchableOpacity 
+                                style={[styles.dateToggleBtn, useManualDate && styles.dateToggleBtnActive]} 
+                                onPress={() => setUseManualDate(true)}
+                            >
+                                <Text style={[styles.dateToggleText, useManualDate && styles.dateToggleTextActive]}>Manual</Text>
                             </TouchableOpacity>
                         </View>
+
+                        {!useManualDate ? (
+                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                <TouchableOpacity style={[styles.selector, { flex: 1 }]} onPress={() => setShowDatePicker(true)}>
+                                    <Text>{date.toLocaleDateString()}</Text>
+                                    <Ionicons name="calendar-outline" size={20} color="#666" />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.selector, { flex: 1 }]} onPress={() => setShowTimePicker(true)}>
+                                    <Text>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                                    <Ionicons name="time-outline" size={20} color="#666" />
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <TextInput 
+                                style={styles.input} 
+                                value={dataHoraText} 
+                                onChangeText={setDataHoraText} 
+                                placeholder="YYYY-MM-DD HH:mm (Ex: 2025-01-20 14:00)" 
+                            />
+                        )}
 
                         {showDatePicker && (
                             <DateTimePicker value={date} mode="date" display="default" onChange={onDateChange} />
                         )}
                         {showTimePicker && (
                             <DateTimePicker value={date} mode="time" display="default" is24Hour={true} onChange={onTimeChange} />
+                        )}
+
+                        {tipo === 'AULA' && (
+                            <>
+                                <Text style={styles.label}>Dias e Horários (Texto)</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Ex: Terças e Quintas às 19h"
+                                    value={scheduleText}
+                                    onChangeText={setScheduleText}
+                                />
+                            </>
                         )}
 
                         <Text style={styles.label}>Fuso Horário</Text>
@@ -320,10 +398,16 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                             multiline
                         />
 
-                        <Text style={styles.label}>Professor Responsável *</Text>
-                        <TouchableOpacity style={styles.selector} onPress={() => setShowUserSelect(true)}>
-                            <Text style={{ color: professorId ? '#000' : '#888' }}>{getProfessorName()}</Text>
+                        <Text style={styles.label}>Coordenador Responsável *</Text>
+                        <TouchableOpacity style={styles.selector} onPress={() => setShowCoordenadorSelect(true)}>
+                            <Text style={{ color: coordenadorId ? '#000' : '#888' }}>{getCoordenadorName()}</Text>
                             <Ionicons name="person-add-outline" size={20} color="#666" />
+                        </TouchableOpacity>
+
+                        <Text style={styles.label}>Professores Auxiliares</Text>
+                        <TouchableOpacity style={styles.selector} onPress={() => setShowProfessoresSelect(true)}>
+                            <Text style={{ color: professoresIds.length > 0 ? '#000' : '#888' }}>{getProfessoresNames()}</Text>
+                            <Ionicons name="people-outline" size={20} color="#666" />
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
@@ -334,7 +418,6 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                     </ScrollView>
                 </View>
 
-                {/* Sub-Modals (Type, TZ, User) */}
                 <Modal visible={showTypeSelect} transparent animationType="fade">
                     <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowTypeSelect(false)}>
                         <View style={styles.selectBox}>
@@ -347,26 +430,11 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                     </TouchableOpacity>
                 </Modal>
 
-                <Modal visible={showTzSelect} transparent animationType="fade">
-                    <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowTzSelect(false)}>
-                        <View style={styles.selectBox}>
-                            <ScrollView>
-                                {TIMEZONES.map((tz) => (
-                                    <TouchableOpacity key={tz.value} style={styles.selectItem} onPress={() => { setFusoHorario(tz.value); setShowTzSelect(false); }}>
-                                        <Text style={styles.selectText}>{tz.label}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                        </View>
-                    </TouchableOpacity>
-                </Modal>
-
-                {/* User Selection Full Screen */}
-                <Modal visible={showUserSelect} animationType="slide">
+                <Modal visible={showCoordenadorSelect} animationType="slide">
                     <View style={styles.modalContainer}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Selecionar Professor</Text>
-                            <TouchableOpacity onPress={() => setShowUserSelect(false)}>
+                            <Text style={styles.modalTitle}>Selecionar Coordenador</Text>
+                            <TouchableOpacity onPress={() => setShowCoordenadorSelect(false)}>
                                 <Ionicons name="close" size={28} color="#333" />
                             </TouchableOpacity>
                         </View>
@@ -374,16 +442,40 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
                             data={allUsers}
                             keyExtractor={u => u.id}
                             renderItem={({ item }) => (
-                                <TouchableOpacity style={styles.userItem} onPress={() => { setProfessorId(item.id); setShowUserSelect(false); }}>
+                                <TouchableOpacity style={styles.userItem} onPress={() => { setCoordenadorId(item.id); setShowCoordenadorSelect(false); }}>
                                     <View>
                                         <Text style={styles.userName}>{item.nome}</Text>
                                         <Text style={styles.userRole}>{item.tipo}</Text>
                                     </View>
-                                    {professorId === item.id && <Ionicons name="checkmark-circle" size={24} color="#5cb85c" />}
+                                    {coordenadorId === item.id && <Ionicons name="checkmark-circle" size={24} color="#5cb85c" />}
                                 </TouchableOpacity>
                             )}
                             ListEmptyComponent={loadingUsers ? <ActivityIndicator style={{ marginTop: 20 }} /> : <Text style={styles.emptyText}>Nenhum responsável encontrado.</Text>}
                         />
+                    </View>
+                </Modal>
+
+                <Modal visible={showProfessoresSelect} animationType="slide">
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Selecione Professores</Text>
+                            <TouchableOpacity onPress={() => setShowProfessoresSelect(false)}>
+                                <Ionicons name="close" size={28} color="#333" />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView>
+                            {allUsers.map(u => (
+                                <TouchableOpacity key={u.id} style={styles.userItem} onPress={() => toggleProfessor(u.id)}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <View>
+                                            <Text style={styles.userName}>{u.nome}</Text>
+                                            <Text style={styles.userRole}>{u.tipo}</Text>
+                                        </View>
+                                        {professoresIds.includes(u.id) && <Ionicons name="checkmark-circle" size={24} color="green" />}
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
                     </View>
                 </Modal>
             </Modal>
@@ -437,17 +529,6 @@ const styles = StyleSheet.create({
     
     emptyText: { textAlign: 'center', marginTop: 100, color: '#999', fontSize: 16 },
 
-    modalContainer: { flex: 1, backgroundColor: '#fff', padding: 20 },
-    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30, paddingTop: 20 },
-    modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#333' },
-    
-    label: { fontWeight: '700', fontSize: 14, color: '#444', marginBottom: 8, marginTop: 20 },
-    input: { backgroundColor: '#f5f7fa', borderWidth: 1, borderColor: '#e1e8f0', borderRadius: 10, padding: 15, fontSize: 16 },
-    selector: { backgroundColor: '#f5f7fa', borderWidth: 1, borderColor: '#e1e8f0', borderRadius: 10, padding: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    
-    saveButton: { backgroundColor: '#4a90e2', padding: 18, borderRadius: 12, alignItems: 'center', marginTop: 40 },
-    saveButtonText: { color: '#fff', fontWeight: '800', fontSize: 16 },
-    
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
     selectBox: { width: '85%', maxHeight: '70%', backgroundColor: '#fff', borderRadius: 20, padding: 10, elevation: 20 },
     selectItem: { padding: 20, borderBottomWidth: 1, borderColor: '#f0f0f0' },
@@ -456,4 +537,17 @@ const styles = StyleSheet.create({
     userItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderColor: '#f0f0f0' },
     userName: { fontSize: 16, fontWeight: 'bold', color: '#333' },
     userRole: { fontSize: 12, color: '#4a90e2', marginTop: 2 },
+
+    dateToggle: { flexDirection: 'row', backgroundColor: '#f5f7fa', borderRadius: 10, padding: 4, marginBottom: 12 },
+    dateToggleBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
+    dateToggleBtnActive: { backgroundColor: '#fff', elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4 },
+    dateToggleText: { fontSize: 12, fontWeight: '600', color: '#666' },
+    dateToggleTextActive: { color: '#4a90e2' },
+
+    modalButtons: { flexDirection: 'row', gap: 10, marginTop: 20 },
+    btn: { flex: 1, padding: 15, borderRadius: 10, alignItems: 'center' },
+    btnCancel: { backgroundColor: '#f5f7fa', borderWidth: 1, borderColor: '#e1e8f0' },
+    btnSave: { backgroundColor: '#4a90e2' },
+    btnText: { fontWeight: 'bold', fontSize: 16, color: '#333' }
+
 });

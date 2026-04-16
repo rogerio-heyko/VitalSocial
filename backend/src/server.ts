@@ -27,6 +27,9 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+import morgan from 'morgan';
+app.use(morgan('combined'));
+
 // Routes
 app.use('/auth', authRoutes);
 app.use('/perfil', profileRoutes);

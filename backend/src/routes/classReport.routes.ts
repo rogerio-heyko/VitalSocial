@@ -23,5 +23,6 @@ const upload = multer({ storage: storage });
 // Routes
 classReportRoutes.post('/', upload.single('foto'), controller.create.bind(controller));
 classReportRoutes.get('/feed', controller.listFeed.bind(controller));
+classReportRoutes.post('/attendance', controller.registerAttendance.bind(controller));
 
 export { classReportRoutes };

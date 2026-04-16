@@ -15,4 +15,5 @@ activityRoutes.get('/projeto/:projetoId', activityController.listarPorProjeto);
 activityRoutes.put('/:id', activityController.atualizar);
 activityRoutes.delete('/:id', activityController.excluir);
 
+
 export { activityRoutes };

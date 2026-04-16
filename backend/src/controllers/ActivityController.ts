@@ -37,15 +37,18 @@ export class ActivityController {
             throw new AppError(`Tipo inválido. Tipos permitidos: ${tiposValidos.join(', ')}`);
         }
 
+        // Normalização de data (Phase 2 fix)
+        const dateObj = new Date(dataHora.includes('T') ? dataHora : dataHora.replace(' ', 'T'));
+
         const atividade = await prisma.atividade.create({
             data: {
                 titulo,
                 tipo,
-                dataHora: new Date(dataHora),
+                dataHora: dateObj,
                 endereco,
                 fusoHorario: fusoHorario || 'UTC-3',
                 projetoId,
-                professorResponsavelId: professorResponsavelId || usuarioId,
+                coordenadorId: professorResponsavelId || usuarioId,
             }
         });
 
@@ -55,7 +58,7 @@ export class ActivityController {
     async listar(req: Request, res: Response) {
         const atividades = await prisma.atividade.findMany({
             include: {
-                professor: {
+                coordenador: {
                     select: { nome: true, email: true, id: true }
                 },
                 projeto: {
@@ -99,8 +102,8 @@ export class ActivityController {
             data: {
                 titulo,
                 tipo,
-                dataHora: dataHora ? new Date(dataHora) : undefined,
-                professorResponsavelId,
+                dataHora: dataHora ? new Date(dataHora.includes('T') ? dataHora : dataHora.replace(' ', 'T')) : undefined,
+                coordenadorId: professorResponsavelId,
                 endereco,
                 fusoHorario
             }
@@ -110,6 +113,7 @@ export class ActivityController {
     }
 
     async excluir(req: Request, res: Response) {
+
         const { id: usuarioId } = req.user;
         const { id: atividadeId } = req.params;
 
@@ -144,7 +148,7 @@ export class ActivityController {
         const atividades = await prisma.atividade.findMany({
             where: { projetoId },
             include: {
-                professor: {
+                coordenador: {
                     select: { nome: true, email: true, id: true }
                 },
                 _count: {
@@ -214,7 +218,7 @@ export class ActivityController {
             include: {
                 atividade: {
                     include: {
-                        professor: {
+                        coordenador: {
                             select: { nome: true }
                         }
                     }
@@ -223,5 +227,60 @@ export class ActivityController {
         });
 
         return res.json(inscricoes);
+    }
+
+    async update(req: Request, res: Response) {
+        const { id: usuarioId } = req.user;
+        const { id } = req.params;
+        const { titulo, tipo, dataHora, professorResponsavelId } = req.body;
+
+        // Verificar permissão
+        const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+        if (!usuario || (usuario.tipo !== 'STAFF' && usuario.tipo !== 'ADMIN')) {
+            throw new AppError('Permissão negada.', 403);
+        }
+
+        const atividade = await prisma.atividade.findUnique({ where: { id } });
+        if (!atividade) {
+            throw new AppError('Atividade não encontrada.', 404);
+        }
+
+        const data: any = {};
+        if (titulo) data.titulo = titulo;
+        if (tipo) data.tipo = tipo;
+        if (dataHora) data.dataHora = new Date(dataHora.includes('T') ? dataHora : dataHora.replace(' ', 'T'));
+        if (professorResponsavelId) data.professorResponsavelId = professorResponsavelId;
+
+        const updated = await prisma.atividade.update({
+            where: { id },
+            data
+        });
+
+        return res.json(updated);
+    }
+
+    async delete(req: Request, res: Response) {
+        const { id: usuarioId } = req.user;
+        const { id } = req.params;
+
+        // Verificar permissão
+        const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+        if (!usuario || (usuario.tipo !== 'STAFF' && usuario.tipo !== 'ADMIN')) {
+            throw new AppError('Permissão negada.', 403);
+        }
+
+        const atividade = await prisma.atividade.findUnique({ where: { id } });
+        if (!atividade) {
+            throw new AppError('Atividade não encontrada.', 404);
+        }
+
+        // Tentar apagar (pode falhar por foreign keys)
+        try {
+            await prisma.atividade.delete({ where: { id } });
+        } catch (error) {
+            throw new AppError('Não é possível excluir atividade com inscrições ou turmas associadas.', 400);
+        }
+
+        return res.status(204).send();
     }
 }

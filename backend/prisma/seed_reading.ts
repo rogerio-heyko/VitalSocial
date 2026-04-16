@@ -2,8 +2,9 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const readingPlanText = `
-FASE 1: A Identidade e o Amor (João e Cartas da Graça) - Foco: Quem é Jesus e quem você é nEle.
+const rawPlan = `
+FASE 1: A Identidade e o Amor (João e Cartas da Graça)
+Foco: Quem é Jesus e quem você é nEle.
 Dia 1: Sl 1, João 1, Efésios 1
 Dia 2: Sl 2, João 2, Efésios 2
 Dia 3: Sl 3, João 3, Efésios 3
@@ -25,7 +26,9 @@ Dia 18: Sl 18, João 18, 1 João 4
 Dia 19: Sl 19, João 19, 1 João 5
 Dia 20: Sl 20, João 20, 2 João e 3 João
 Dia 21: Sl 21, João 21, Judas 1
-FASE 2: Ação e Serviço (Marcos e Gálatas) - Foco: Jesus como Servo e a liberdade da Lei.
+
+FASE 2: Ação e Serviço (Marcos e Gálatas)
+Foco: Jesus como Servo e a liberdade da Lei.
 Dia 22: Sl 22, Marcos 1, Gálatas 1
 Dia 23: Sl 23, Marcos 2, Gálatas 2
 Dia 24: Sl 24, Marcos 3, Gálatas 3
@@ -42,7 +45,9 @@ Dia 34: Sl 34, Marcos 13, 2 Tessalonicenses 2
 Dia 35: Sl 35, Marcos 14, 2 Tessalonicenses 3
 Dia 36: Sl 36, Marcos 15, Filemom 1
 Dia 37: Sl 37, Marcos 16, Tiago 1
-FASE 3: O Reino e a Justiça (Mateus e Romanos) - Foco: O Sermão do Monte e a Teologia da Salvação.
+
+FASE 3: O Reino e a Justiça (Mateus e Romanos)
+Foco: O Sermão do Monte e a Teologia da Salvação.
 Dia 38: Sl 38, Mateus 1, Tiago 2
 Dia 39: Sl 39, Mateus 2, Tiago 3
 Dia 40: Sl 40, Mateus 3, Tiago 4
@@ -71,7 +76,9 @@ Dia 62: Sl 62, Mateus 25, 1 Pedro 5
 Dia 63: Sl 63, Mateus 26, 2 Pedro 1
 Dia 64: Sl 64, Mateus 27, 2 Pedro 2
 Dia 65: Sl 65, Mateus 28, 2 Pedro 3
-FASE 4: O Espírito e a Igreja (Atos e Coríntios) - Foco: O poder de Deus em nós.
+
+FASE 4: O Espírito e a Igreja (Atos e Coríntios)
+Foco: O poder de Deus em nós.
 Dia 66: Sl 66, Atos 1, 1 Coríntios 1
 Dia 67: Sl 67, Atos 2 (Pentecostes), 1 Coríntios 2
 Dia 68: Sl 68, Atos 3, 1 Coríntios 3
@@ -101,7 +108,9 @@ Dia 91: Sl 91, Atos 26, 2 Coríntios 10
 Dia 92: Sl 92, Atos 27, 2 Coríntios 11
 Dia 93: Sl 93, Atos 28, 2 Coríntios 12
 Dia 94: Sl 94, Lucas 1, 2 Coríntios 13
-FASE 5: A Humanidade e a Fé (Lucas e Hebreus) - Foco: Jesus como homem perfeito e o Sumo Sacerdote.
+
+FASE 5: A Humanidade e a Fé (Lucas e Hebreus)
+Foco: Jesus como homem perfeito e o Sumo Sacerdote.
 Dia 95: Sl 95, Lucas 2, Hebreus 1
 Dia 96: Sl 96, Lucas 3, Hebreus 2
 Dia 97: Sl 97, Lucas 4, Hebreus 3
@@ -127,7 +136,9 @@ Dia 116: Sl 116, Lucas 23, 2 Timóteo 3
 Dia 117: Sl 117, Lucas 24, 2 Timóteo 4
 Dia 118: Sl 118, Tito 1, Tito 2
 Dia 119: Sl 119:1-24, Tito 3, 3 João 1
-FASE 6: O Início e a Sabedoria (Gênesis e Provérbios) - Foco: Deus como Criador. Lendo o AT com a mente renovada.
+
+FASE 6: O Início e a Sabedoria (Gênesis e Provérbios)
+Foco: Deus como Criador. Lendo o AT com a mente renovada.
 Dia 120: Sl 119:25-48, Gênesis 1, Provérbios 1
 Dia 121: Sl 119:49-72, Gênesis 2, Provérbios 2
 Dia 122: Sl 119:73-96, Gênesis 3 (A Queda), Provérbios 3
@@ -159,7 +170,9 @@ Dia 147: Sl 141, Gênesis 28, Provérbios 28
 Dia 148: Sl 142, Gênesis 29, Provérbios 29
 Dia 149: Sl 143, Gênesis 30, Provérbios 30
 Dia 150: Sl 144, Gênesis 31, Provérbios 31
-FASE 7: Providência e Êxodo (José e Moisés) - Foco: Deus cuida e Deus liberta.
+
+FASE 7: Providência e Êxodo (José e Moisés)
+Foco: Deus cuida e Deus liberta.
 Dia 151: Sl 145, Gênesis 32, 1 João 1 (Releitura rápida)
 Dia 152: Sl 146, Gênesis 33, 1 João 2
 Dia 153: Sl 147, Gênesis 34, 1 João 3
@@ -190,7 +203,9 @@ Dia 177: Sl 21, Êxodo 8, 1 Tessalonicenses 5
 Dia 178: Sl 22, Êxodo 9, 2 Tessalonicenses 1
 Dia 179: Sl 23, Êxodo 10, 2 Tessalonicenses 2
 Dia 180: Sl 24, Êxodo 11, 2 Tessalonicenses 3
-FASE 8: O Deserto e a Lei (Êxodo e Levítico Selecionado) - Foco: A Santidade de Deus.
+
+FASE 8: O Deserto e a Lei (Êxodo e Levítico Selecionado)
+Foco: A Santidade de Deus.
 Dia 181: Sl 25, Êxodo 12 (Páscoa), Filemom
 Dia 182: Sl 26, Êxodo 13, Judas
 Dia 183: Sl 27, Êxodo 14 (Mar Vermelho), Romanos 8
@@ -211,7 +226,9 @@ Dia 197: Sl 41, Levítico 19, 1 Pedro 1
 Dia 198: Sl 42, Números 6 (Bênção), 1 Pedro 2
 Dia 199: Sl 43, Números 11, 1 Pedro 3
 Dia 200: Sl 44, Números 13, 1 Pedro 4
-FASE 9: A Terra Prometida e a História (Josué, Juízes, Rute) - Foco: Conquista, fracasso humano e fidelidade divina.
+
+FASE 9: A Terra Prometida e a História (Josué, Juízes, Rute)
+Foco: Conquista, fracasso humano e fidelidade divina.
 Dia 201: Sl 45, Números 14, 1 Pedro 5
 Dia 202: Sl 46, Deuteronômio 6 (Shemá), 2 João
 Dia 203: Sl 47, Deuteronômio 30, 3 João
@@ -236,7 +253,9 @@ Dia 221: Sl 65, Rute 1, Provérbios 9
 Dia 222: Sl 66, Rute 2, Provérbios 10
 Dia 223: Sl 67, Rute 3, Provérbios 11
 Dia 224: Sl 68, Rute 4, Provérbios 12
-FASE 10: Reis e Profetas (Samuel, Davi e Isaías) - Foco: O coração de Deus e a promessa do Messias.
+
+FASE 10: Reis e Profetas (Samuel, Davi e Isaías)
+Foco: O coração de Deus e a promessa do Messias.
 Dia 225: Sl 69, 1 Samuel 1, Provérbios 13
 Dia 226: Sl 70, 1 Samuel 2, Provérbios 14
 Dia 227: Sl 71, 1 Samuel 3, Provérbios 15
@@ -268,7 +287,9 @@ Dia 252: Sl 96, Jonas 1, Isaías 60
 Dia 253: Sl 97, Jonas 2, Isaías 61
 Dia 254: Sl 98, Jonas 3, Miqueias 6
 Dia 255: Sl 99, Jonas 4, Malaquias 3
-FASE 11: Retorno aos Evangelhos (João e Revelação) - Foco: Consolidando a visão de Cristo e a Eternidade.
+
+FASE 11: Retorno aos Evangelhos (João e Revelação)
+Foco: Consolidando a visão de Cristo e a Eternidade.
 Dia 256: Sl 100, João 1, Apocalipse 1
 Dia 257: Sl 101, João 2, Apocalipse 2
 Dia 258: Sl 102, João 3, Apocalipse 3
@@ -291,7 +312,9 @@ Dia 274: Sl 118, João 19, Apocalipse 19
 Dia 275: Sl 119:1-24, João 20, Apocalipse 20
 Dia 276: Sl 119:25-48, João 21, Apocalipse 21
 Dia 277: Sl 119:49-72, Apocalipse 22, 1 João 1
-FASE 12: Aprofundamento e Conclusão (Releituras Chave) - Foco: Fixando o que mais importa nos últimos 3 meses.
+
+FASE 12: Aprofundamento e Conclusão (Releituras Chave)
+Foco: Fixando o que mais importa nos últimos 3 meses.
 Dia 278: Sl 120, Marcos 1, Romanos 8
 Dia 279: Sl 121, Marcos 2, Romanos 12
 Dia 280: Sl 122, Marcos 3, 1 Coríntios 13
@@ -383,61 +406,47 @@ Dia 365: Sl 150, João 20 e 21, 1 João 5
 `;
 
 async function main() {
-    console.log('Seeding Reading Plan...');
+    console.log('Extraindo e preenchendo o plano bíblico Cristocentrico de 365 dias...');
 
-    const lines = readingPlanText.split(/\r?\n/);
-    let currentPhase = '';
+    const dataToInsert = [];
+    const lines = rawPlan.split('\n');
 
-    // Clear existing to avoid duplicates in this seed run (for safety, optional)
-    // await prisma.planoLeitura.deleteMany({}); 
+    let currentFase = '';
+    let currentFoco = '';
 
     for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        // console.log(`Line: ${trimmed}`); // Verbose, maybe just for first few?
+        if (line.trim() === '') continue;
 
-        if (trimmed.startsWith('FASE')) {
-            currentPhase = trimmed;
-            console.log(`Processing ${currentPhase}`);
-            continue;
-        }
-
-        if (trimmed.startsWith('Dia')) {
-            // "Dia 1: Sl 1, João 1, Efésios 1"
-            const parts = trimmed.split(':');
-            const dayPart = parts[0].trim(); // "Dia 1"
-            const readingPart = parts.slice(1).join(':').trim(); // "Sl 1, João 1, Efésios 1"
-
-            const dayNumber = parseInt(dayPart.replace('Dia', '').trim());
-
-            if (!isNaN(dayNumber)) {
-                console.log(`Inserting Day ${dayNumber}`);
-                await prisma.planoLeitura.upsert({
-                    where: { dia: dayNumber },
-                    update: {
-                        trechosBiblicos: readingPart,
-                        reflexao: currentPhase // Using Phase as reflection/context for now
-                    },
-                    create: {
-                        dia: dayNumber,
-                        trechosBiblicos: readingPart,
-                        reflexao: currentPhase
-                    }
+        if (line.startsWith('FASE')) {
+            currentFase = line.trim();
+        } else if (line.startsWith('Foco:')) {
+            currentFoco = line.trim();
+        } else if (line.startsWith('Dia')) {
+            // Match pattern "Dia X: Content"
+            const match = line.match(/^Dia\s+(\d+):\s+(.*)$/);
+            if (match) {
+                const dayNumber = parseInt(match[1]);
+                const reading = match[2];
+                dataToInsert.push({
+                    dia: dayNumber,
+                    trechosBiblicos: reading,
+                    reflexao: `${currentFase}\n${currentFoco}\n\nReflita sobre a leitura de hoje e anote o que Deus falar ao seu coração.`
                 });
             }
         }
     }
 
-    const count = await prisma.planoLeitura.count();
-    console.log(`Total Plans in DB after seed: ${count}`);
-    console.log('Reading Plan Seeded Successfully.');
+    try {
+        const result = await prisma.planoLeitura.createMany({
+            data: dataToInsert,
+            skipDuplicates: true
+        });
+        console.log(`\n✅ Sucesso! Foram cadastrados ${result.count} planos de leitura diários.`);
+    } catch (e) {
+        console.error('Erro ao preencher tabela PlanoLeitura:', e);
+    }
 }
 
 main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+    .catch((e) => console.error(e))
+    .finally(async () => await prisma.$disconnect());
