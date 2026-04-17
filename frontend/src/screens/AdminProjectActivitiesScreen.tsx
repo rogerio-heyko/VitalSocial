@@ -67,17 +67,6 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
         loadUsers();
     }, []);
 
-    const getCoordenadorName = () => {
-        const p = allUsers.find(u => u.id === coordenadorId);
-        return p ? p.nome : "Selecione o Coordenador";
-    };
-
-    const getProfessoresNames = () => {
-        if (professoresIds.length === 0) return "Nenhum selecionado";
-        const names = allUsers.filter(u => professoresIds.includes(u.id)).map(u => u.nome);
-        return names.join(', ');
-    };
-
     async function loadActivities() {
         try {
             const response = await api.get(`/atividades/projeto/${projectId}`);
