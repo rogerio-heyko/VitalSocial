@@ -22,8 +22,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.heyko.vitalsocial",
-      "usesCleartextTraffic": true
+      "package": "com.heyko.vitalsocial"
     },
     "web": {
       "favicon": "./assets/favicon.png"

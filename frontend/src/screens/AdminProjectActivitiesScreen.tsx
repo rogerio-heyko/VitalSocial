@@ -61,9 +61,6 @@ export default function AdminProjectActivitiesScreen({ route, navigation }: any)
     const [showTzSelect, setShowTzSelect] = useState(false);
     const [showCoordenadorSelect, setShowCoordenadorSelect] = useState(false);
     const [showProfessoresSelect, setShowProfessoresSelect] = useState(false);
-    const [showCoordenadorSelect, setShowCoordenadorSelect] = useState(false);
-    const [showProfessoresSelect, setShowProfessoresSelect] = useState(false);
-    const [showTzSelect, setShowTzSelect] = useState(false);
 
     useEffect(() => {
         loadActivities();
