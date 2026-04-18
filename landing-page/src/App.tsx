@@ -279,7 +279,7 @@ export default function App() {
                 Escaneie com a câmera do seu celular para baixar a versão oficial do APK e se conectar à rede segura.
               </p>
               
-              <a href="https://expo.dev/artifacts/eas/sv22DbDqBTiLFoV3F7HzKo.apk" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-500 transition-colors shadow-lg">
+              <a href="https://expo.dev/artifacts/eas/fdU8f46qguEQgZj2XDYr6q.apk" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-500 transition-colors shadow-lg">
                 <Smartphone className="w-5 h-5" />
                 {t('footer.cta.download')}
               </a>
