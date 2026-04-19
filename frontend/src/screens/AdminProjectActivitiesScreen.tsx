@@ -563,6 +563,15 @@ const styles = StyleSheet.create({
     btn: { flex: 1, padding: 15, borderRadius: 10, alignItems: 'center' },
     btnCancel: { backgroundColor: '#f5f7fa', borderWidth: 1, borderColor: '#e1e8f0' },
     btnSave: { backgroundColor: '#4a90e2' },
-    btnText: { fontWeight: 'bold', fontSize: 16, color: '#333' }
+    btnText: { fontWeight: 'bold', fontSize: 16, color: '#333' },
+
+    modalContainer: { flex: 1, backgroundColor: '#fff', paddingTop: 50, paddingHorizontal: 20 },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+    modalTitle: { fontSize: 24, fontWeight: 'bold', color: '#333' },
+    label: { fontSize: 14, fontWeight: 'bold', color: '#555', marginTop: 15, marginBottom: 8 },
+    input: { backgroundColor: '#f5f7fa', padding: 15, borderRadius: 12, borderWidth: 1, borderColor: '#e1e8f0', fontSize: 16, color: '#333' },
+    selector: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f5f7fa', padding: 15, borderRadius: 12, borderWidth: 1, borderColor: '#e1e8f0' },
+    saveButton: { backgroundColor: '#4a90e2', padding: 18, borderRadius: 12, alignItems: 'center', marginTop: 30, elevation: 4, shadowColor: '#4a90e2', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } },
+    saveButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 }
 
 });

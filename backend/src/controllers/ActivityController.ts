@@ -38,7 +38,12 @@ export class ActivityController {
         }
 
         // Normalização de data (Phase 2 fix)
-        const dateObj = new Date(dataHora.includes('T') ? dataHora : dataHora.replace(' ', 'T'));
+        const dateString = String(dataHora);
+        const dateObj = new Date(dateString.includes('T') ? dateString : dateString.replace(' ', 'T'));
+
+        if (isNaN(dateObj.getTime())) {
+            throw new AppError('Data/Hora enviada no formato inválido.', 400);
+        }
 
         const atividade = await prisma.atividade.create({
             data: {
