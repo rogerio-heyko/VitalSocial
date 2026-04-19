@@ -279,7 +279,7 @@ export default function App() {
                 Escaneie com a câmera do seu celular para baixar a versão oficial do APK e se conectar à rede segura.
               </p>
               
-              <a href="https://expo.dev/accounts/heyko/projects/vital-social/builds/2c7a4372-9fdc-4b1e-bc89-0e44a8786cf0" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-500 transition-colors shadow-lg">
+              <a href="https://expo.dev/accounts/heyko/projects/vital-social/builds/7d861edf-1237-4888-a325-a4d1a017d21a" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-500 transition-colors shadow-lg">
                 <Smartphone className="w-5 h-5" />
                 {t('footer.cta.download')}
               </a>
