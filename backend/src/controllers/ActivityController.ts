@@ -169,6 +169,7 @@ export class ActivityController {
     async inscrever(req: Request, res: Response) {
         const { id: usuarioId } = req.user;
         const { id: atividadeId } = req.params;
+        const { turmaId: requestedTurmaId } = req.body;
 
         const atividade = await prisma.atividade.findUnique({ where: { id: atividadeId } });
 
@@ -184,10 +185,6 @@ export class ActivityController {
             }
         });
 
-        if (inscricaoExistente) {
-            throw new AppError('Você já está inscrito nesta atividade.');
-        }
-
         // Check availability in classes
         const turmas = await prisma.turma.findMany({
             where: { atividadeId },
@@ -195,25 +192,56 @@ export class ActivityController {
         });
 
         let status: 'CONFIRMADA' | 'RESERVA' = 'RESERVA';
+        let turmaIdAtribuida = null;
         
-        // If there are classes, check if any has space
         if (turmas.length > 0) {
-            const temVaga = turmas.some(t => t.vagasTotais === 0 || t._count.inscricoes < t.vagasTotais);
-            if (temVaga) {
-                status = 'CONFIRMADA';
+            if (requestedTurmaId) {
+                const requestedTurma = turmas.find(t => t.id === requestedTurmaId);
+                if (!requestedTurma) throw new AppError('Turma selecionada não pertence a esta atividade.', 400);
+                turmaIdAtribuida = requestedTurma.id;
+                if (requestedTurma.vagasTotais === 0 || requestedTurma._count.inscricoes < requestedTurma.vagasTotais) {
+                    status = 'CONFIRMADA';
+                }
+            } else {
+                // If there are classes, check if any has space
+                const turmaComVaga = turmas.find(t => t.vagasTotais === 0 || t._count.inscricoes < t.vagasTotais);
+                if (turmaComVaga) {
+                    status = 'CONFIRMADA';
+                    turmaIdAtribuida = turmaComVaga.id;
+                } else {
+                    turmaIdAtribuida = turmas[0].id; // Fallback to waiting list of the first class
+                }
             }
+        }
+
+        if (inscricaoExistente) {
+            // Se já inscrito e enviou um pedido de turma (nova ou atualizar a vazia)
+            if (requestedTurmaId || !inscricaoExistente.turmaId) {
+                const targetTurmaId = requestedTurmaId || turmaIdAtribuida;
+                if (targetTurmaId) {
+                    const inscricaoAtualizada = await prisma.inscricao.update({
+                        where: { id: inscricaoExistente.id },
+                        data: { turmaId: targetTurmaId, status }
+                    });
+                    return res.status(200).json(inscricaoAtualizada);
+                }
+            }
+            throw new AppError('Você já está inscrito nesta atividade.');
         }
 
         const inscricao = await prisma.inscricao.create({
             data: {
                 alunoId: usuarioId,
                 atividadeId,
+                turmaId: turmaIdAtribuida,
                 status
             }
         });
 
         return res.status(201).json(inscricao);
     }
+
+
 
     async minhasInscricoes(req: Request, res: Response) {
         const { id } = req.user;

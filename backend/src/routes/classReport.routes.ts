@@ -1,15 +1,22 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { ClassReportController } from '../controllers/ClassReportController';
 
 const classReportRoutes = Router();
 const controller = new ClassReportController();
 
+// Ensure uploads folder exists
+const uploadDir = path.join(__dirname, '..', '..', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // Configure Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Make sure this folder exists
+        cb(null, uploadDir); 
     },
     filename: (req, file, cb) => {
         // Unique filename: timestamp-random.ext

@@ -20,22 +20,26 @@ const ActivityCard = React.memo(function ActivityCard({ title, type, date, isEnr
 
     return (
         <View style={styles.card}>
-            <View style={styles.header}>
-                <Text style={styles.type}>{type}</Text>
-                {isEnrolled && <Text style={styles.enrolledBadge}>Inscrito</Text>}
+            <View style={styles.contentContainer}>
+                <View style={styles.header}>
+                    <Text style={styles.type}>{type}</Text>
+                    {isEnrolled && <Text style={styles.enrolledBadge}>Inscrito</Text>}
+                </View>
+                <Text style={styles.title} numberOfLines={2}>{title}</Text>
+                <Text style={styles.date}>{formattedDate}</Text>
             </View>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.date}>{formattedDate}</Text>
 
-            <TouchableOpacity
-                style={[styles.button, isEnrolled ? styles.buttonOutline : styles.buttonPrimary]}
-                onPress={onPress}
-                activeOpacity={0.8}
-            >
-                <Text style={[styles.buttonText, isEnrolled ? styles.textOutline : styles.textPrimary]}>
-                    {isEnrolled ? 'Ver Detalhes' : 'Inscrever-se'}
-                </Text>
-            </TouchableOpacity>
+            <View style={styles.footerContainer}>
+                <TouchableOpacity
+                    style={[styles.button, isEnrolled ? styles.buttonOutline : styles.buttonPrimary]}
+                    onPress={onPress}
+                    activeOpacity={0.8}
+                >
+                    <Text style={[styles.buttonText, isEnrolled ? styles.textOutline : styles.textPrimary]}>
+                        {isEnrolled ? 'Ver Detalhes' : 'Inscrever-se'}
+                    </Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 });
@@ -53,9 +57,18 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
-        marginHorizontal: 4, // for carousel spacing
+        marginHorizontal: 8, // for carousel spacing
+        width: 280, // Fixed width for consistent horizontal scrolling
+        minHeight: 200, // Ensure height is consistent
+        flexDirection: 'column',
     },
-    header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+    contentContainer: {
+        flex: 1, // Takes up remaining space, pushing the footer down
+    },
+    footerContainer: {
+        marginTop: 'auto',
+    },
+    header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, alignItems: 'center' },
     type: { fontSize: 12, color: '#666', textTransform: 'uppercase', fontWeight: 'bold' },
     enrolledBadge: { fontSize: 10, color: '#fff', backgroundColor: colors.success, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, overflow: 'hidden' },
     title: { fontSize: 18, fontWeight: 'bold', marginBottom: 4, color: '#333' },
@@ -63,7 +76,7 @@ const styles = StyleSheet.create({
     button: { minHeight: 48, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
     buttonPrimary: { backgroundColor: colors.primary },
     buttonOutline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.primary },
-    buttonText: { fontWeight: '600' },
+    buttonText: { fontWeight: '600', fontSize: 16 },
     textPrimary: { color: '#fff' },
     textOutline: { color: colors.primary }
 });

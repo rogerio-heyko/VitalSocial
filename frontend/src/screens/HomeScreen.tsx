@@ -74,14 +74,8 @@ export default function HomeScreen({ navigation }: any) {
         }
     }, [authLoading]);
 
-    async function handleSubscribe(activityId: string) {
-        try {
-            await api.post(`/atividades/${activityId}/inscrever`);
-            Alert.alert('Sucesso', 'Inscrição realizada!');
-            loadData();
-        } catch (error: any) {
-            Alert.alert('Erro', error.response?.data?.mensagem || 'Falha ao se inscrever.');
-        }
+    function handleSubscribe(activityId: string, activityTitle: string) {
+        navigation.navigate('TurmaSelection', { activityId, activityTitle });
     }
 
     const isEnrolled = useCallback((actId: string) => myInscriptions.some(ins => ins.atividade.id === actId), [myInscriptions]);
@@ -105,7 +99,7 @@ export default function HomeScreen({ navigation }: any) {
                 type={item.tipo}
                 date={item.dataHora}
                 isEnrolled={isEnrolled(item.id)}
-                onPress={() => isEnrolled(item.id) ? {} : handleSubscribe(item.id)}
+                onPress={() => isEnrolled(item.id) ? {} : handleSubscribe(item.id, item.titulo)}
             />
         </View>
     ), [isEnrolled]);
@@ -209,6 +203,17 @@ export default function HomeScreen({ navigation }: any) {
                     removeClippedSubviews={true}
                     initialNumToRender={2}
                     ListEmptyComponent={<Text style={styles.emptyText}>{t('noActivities')}</Text>}
+                    ListFooterComponent={
+                        activities.length > 0 ? (
+                            <TouchableOpacity 
+                                style={styles.seeAllCard}
+                                onPress={() => {/* Future navigation to full list */}}
+                            >
+                                <Ionicons name="arrow-forward-circle" size={48} color={colors.primary} />
+                                <Text style={styles.seeAllText}>Ver todas as atividades</Text>
+                            </TouchableOpacity>
+                        ) : null
+                    }
                 />
             </View>
 
@@ -254,6 +259,8 @@ const styles = StyleSheet.create({
     readingWidget: { padding: 24, borderRadius: 16 },
     readingText: { color: '#fff', fontSize: 24, fontWeight: 'bold', marginTop: 4 },
     readingSub: { color: '#fff', opacity: 0.9, fontSize: 14, marginTop: 4 },
+    seeAllCard: { width: 140, height: 200, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 12, marginLeft: 8, marginRight: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
+    seeAllText: { marginTop: 12, textAlign: 'center', color: '#4B5563', fontWeight: 'bold', fontSize: 14 },
     errorBanner: { backgroundColor: colors.error + '20', padding: 16, borderRadius: 12, marginBottom: 16, alignItems: 'center' },
     errorText: { color: colors.error, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
     retryButton: { backgroundColor: colors.error, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },

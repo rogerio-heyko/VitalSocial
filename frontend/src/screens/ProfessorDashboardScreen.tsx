@@ -42,22 +42,22 @@ export default function ProfessorDashboardScreen() {
     }
 
     const renderItem = ({ item }: { item: Turma }) => (
-        <View className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-gray-100 flex-row justify-between items-center">
-            <View>
+        <View className="bg-white p-5 rounded-xl mb-4 shadow-sm border border-gray-100 flex-col">
+            <View className="mb-4">
                 <Text className="text-lg font-bold text-gray-800">{item.nome}</Text>
                 <Text className="text-gray-500">{item.atividade.titulo} ({item.atividade.tipo})</Text>
-                <Text className="text-gray-400 text-xs mt-1">{item._count?.inscricoes || 0} alunos</Text>
+                <Text className="text-gray-400 text-sm mt-2 font-medium">{item._count?.inscricoes || 0} alunos inscritos</Text>
             </View>
             <TouchableOpacity
-                className="bg-teal-600 px-4 py-2 rounded-lg flex-row items-center"
+                className="bg-teal-600 px-4 py-3 rounded-lg flex-row justify-center items-center w-full"
                 onPress={() => navigation.navigate('ClassReport', {
                     atividadeId: item.atividadeId,
                     turmaId: item.id,
                     titulo: `${item.atividade.titulo} - ${item.nome}`
                 } as any)}
             >
-                <Ionicons name="checkbox-outline" size={20} color="#fff" />
-                <Text className="text-white font-bold ml-2">Chamada</Text>
+                <Ionicons name="checkbox-outline" size={24} color="#fff" />
+                <Text className="text-white font-bold ml-2 text-base">Fazer Chamada / Relatório</Text>
             </TouchableOpacity>
         </View>
     );

@@ -13,6 +13,7 @@ import DonorOnboardingScreen from '../screens/DonorOnboardingScreen';
 import BeneficiaryOnboardingScreen from '../screens/BeneficiaryOnboardingScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ActivityDetailsScreen from '../screens/ActivityDetailsScreen';
+import TurmaSelectionScreen from '../screens/TurmaSelectionScreen';
 import EmailVerificationScreen from '../screens/EmailVerificationScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
@@ -43,6 +44,7 @@ export type RootStackParamList = {
     AdminProjectActivities: { projectId: string; projectName: string };
     ManageTurmas: { activityId: string; activityTitle: string };
     ActivityDetails: { activityId: string };
+    TurmaSelection: { activityId: string; activityTitle: string };
     ProfessorDashboard: undefined;
     ClassReport: { atividadeId: string; titulo: string };
     AdminWaitlist: undefined;
@@ -95,6 +97,7 @@ export default function Routes() {
                             <Stack.Screen name="AdminProjectActivities" component={require('../screens/AdminProjectActivitiesScreen').default} options={{ title: 'Atividades do Projeto' }} />
                             <Stack.Screen name="ManageTurmas" component={require('../screens/ManageTurmasScreen').default} options={{ title: 'Turmas' }} />
                             <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} options={{ title: 'Detalhes' }} />
+                            <Stack.Screen name="TurmaSelection" component={TurmaSelectionScreen} options={{ title: 'Escolha de Turma' }} />
 
                             {/* Professor Flow */}
                             <Stack.Screen name="ProfessorDashboard" component={require('../screens/ProfessorDashboardScreen').default} options={{ title: 'Minhas Turmas' }} />
