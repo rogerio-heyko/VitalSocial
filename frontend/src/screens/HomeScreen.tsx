@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert, RefreshControl, TouchableOpacity, Image } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import ActivityCard from '../components/ActivityCard';
