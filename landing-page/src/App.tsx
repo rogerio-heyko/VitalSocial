@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { 
-  Heart, Globe, Navigation, Search, Activity, ShieldCheck, 
+import {
+  Heart, Globe, Navigation, Search, Activity, ShieldCheck,
   MapPin, Smartphone, PieChart, MessageCircle
 } from 'lucide-react';
 
@@ -21,7 +21,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-white relative">
-      
+
       {/* Header Glassmorphism */}
       <header className="fixed top-0 left-0 right-0 z-50 glass-header">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -29,16 +29,15 @@ export default function App() {
             <Heart className="w-8 h-8 text-accent-500 fill-accent-500" />
             <span className="font-display font-bold text-2xl tracking-tight">Vital<span className="text-accent-500">Social</span></span>
           </div>
-          
+
           <div className="flex items-center gap-6">
             <div className="flex bg-white/5 rounded-full p-1 border border-white/10">
               {['pt', 'en', 'es'].map((lang) => (
                 <button
                   key={lang}
                   onClick={() => changeLanguage(lang)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                    i18n.language === lang ? 'bg-primary-600 shadow-md' : 'hover:text-primary-500 opacity-60 hover:opacity-100'
-                  }`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${i18n.language === lang ? 'bg-primary-600 shadow-md' : 'hover:text-primary-500 opacity-60 hover:opacity-100'
+                    }`}
                 >
                   {lang.toUpperCase()}
                 </button>
@@ -56,11 +55,11 @@ export default function App() {
         {/* Glow Effects */}
         <div className="absolute top-1/2 right-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-600/20 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-accent-500/10 blur-[100px] rounded-full pointer-events-none" />
-        
+
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
-          
+
           {/* First Column (Left): Emotional Image with Slogan */}
-          <motion.div 
+          <motion.div
             className="relative order-1 lg:order-1"
             initial={{ opacity: 0, scale: 0.9, x: -20 }}
             whileInView={{ opacity: 1, scale: 1, x: 0 }}
@@ -69,15 +68,15 @@ export default function App() {
           >
             {/* Decorative Elements around image */}
             <div className="absolute -inset-4 bg-gradient-to-tr from-primary-500/20 to-accent-500/20 blur-2xl rounded-[3rem] opacity-50" />
-            
+
             <div className="relative glass-panel p-3 rounded-[2.5rem] border-white/10 shadow-2xl overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
-              <img 
-                src="/og-image.png" 
-                alt="Família feliz Vital Social" 
+              <img
+                src="/og-image.png"
+                alt="Família feliz Vital Social"
                 className="w-full aspect-[4/5] lg:aspect-auto lg:h-[600px] object-cover rounded-[2rem] transform transition-transform duration-700 group-hover:scale-105"
               />
-              
+
               {/* Floating Badge - SLOGAN HERE */}
               <div className="absolute bottom-8 left-8 right-8 z-20 backdrop-blur-md bg-black/40 border border-white/10 p-5 rounded-2xl">
                 <div className="flex items-center gap-4">
@@ -94,7 +93,7 @@ export default function App() {
             </div>
 
             {/* Shield badge */}
-            <motion.div 
+            <motion.div
               className="absolute -top-6 -left-6 bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl hidden lg:block shadow-xl"
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -114,7 +113,7 @@ export default function App() {
             <p className="text-lg md:text-xl text-gray-300 max-w-2xl leading-relaxed mb-10">
               {t('hero.subheadline')}
             </p>
-            
+
             <div className="flex flex-col sm:flex-row items-center gap-5">
               <a href="#download" className="w-full sm:w-auto px-10 py-4 bg-accent-500 text-white font-bold rounded-2xl hover:bg-accent-600 transition-all shadow-[0_8px_30px_rgb(245,158,11,0.3)] hover:-translate-y-1 active:translate-y-0 text-center">
                 {t('hero.cta.ngo')}
@@ -150,7 +149,7 @@ export default function App() {
 
         <div className="grid md:grid-cols-3 gap-8">
           {/* Pillar 1: NGO */}
-          <motion.div 
+          <motion.div
             className="glass-panel rounded-3xl p-8 hover:-translate-y-2 transition-transform duration-300"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -163,7 +162,7 @@ export default function App() {
             <h3 className="text-2xl font-bold font-display mb-2">{t('pillars.ngo.title')}</h3>
             <p className="text-accent-500 font-medium mb-4">{t('pillars.ngo.subtitle')}</p>
             <p className="text-gray-400 mb-8">{t('pillars.ngo.description')}</p>
-            
+
             <ul className="space-y-6">
               {(t('pillars.ngo.features', { returnObjects: true }) as any[]).map((f: any, i: number) => (
                 <li key={i} className="flex items-start gap-4">
@@ -178,7 +177,7 @@ export default function App() {
           </motion.div>
 
           {/* Pillar 2: Donor */}
-          <motion.div 
+          <motion.div
             className="glass-panel rounded-3xl p-8 border-accent-500/30 hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -192,7 +191,7 @@ export default function App() {
             <h3 className="text-2xl font-bold font-display mb-2 relative z-10">{t('pillars.donor.title')}</h3>
             <p className="text-primary-500 font-medium mb-4 relative z-10">{t('pillars.donor.subtitle')}</p>
             <p className="text-gray-400 mb-8 relative z-10">{t('pillars.donor.description')}</p>
-            
+
             <ul className="space-y-6 relative z-10">
               {(t('pillars.donor.features', { returnObjects: true }) as any[]).map((f: any, i: number) => (
                 <li key={i} className="flex items-start gap-4">
@@ -207,7 +206,7 @@ export default function App() {
           </motion.div>
 
           {/* Pillar 3: Beneficiary */}
-          <motion.div 
+          <motion.div
             className="glass-panel rounded-3xl p-8 hover:-translate-y-2 transition-transform duration-300"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -220,7 +219,7 @@ export default function App() {
             <h3 className="text-2xl font-bold font-display mb-2">{t('pillars.beneficiary.title')}</h3>
             <p className="text-blue-400 font-medium mb-4">{t('pillars.beneficiary.subtitle')}</p>
             <p className="text-gray-400 mb-8">{t('pillars.beneficiary.description')}</p>
-            
+
             <ul className="space-y-6">
               {(t('pillars.beneficiary.features', { returnObjects: true }) as any[]).map((f: any, i: number) => (
                 <li key={i} className="flex items-start gap-4">
@@ -257,7 +256,7 @@ export default function App() {
       {/* Footer & Final Call to Action */}
       <footer id="download" className="relative pt-32 pb-12 px-6">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-500/10 blur-[100px] rounded-full pointer-events-none" />
-        
+
         <div className="max-w-5xl mx-auto text-center relative z-10 mb-20">
           <h2 className="text-4xl md:text-5xl font-display font-extrabold mb-6">
             {t('footer.headline')}
@@ -272,18 +271,18 @@ export default function App() {
               {/* Utiliza a Imagem QR passada pelo usuário */}
               <img src="/qr-apk.png" alt="QR Code Vital Social" className="w-48 h-48 rounded-lg" />
             </div>
-            
+
             <div className="text-left flex-1">
               <h3 className="text-2xl font-bold font-display mb-2">{t('footer.scanQr')}</h3>
               <p className="text-gray-400 mb-6 text-sm">
                 Escaneie com a câmera do seu celular para baixar a versão oficial do APK e se conectar à rede segura.
               </p>
-              
-              <a href="https://expo.dev/accounts/heyko/projects/vital-social/builds/4bf1c075-8925-46d8-9d08-2a18b2b97304" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-500 transition-colors shadow-lg">
+
+              <a href="https://expo.dev/accounts/heyko/projects/vital-social/builds/76dbb324-ba82-497b-b970-3cd855480045" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-500 transition-colors shadow-lg">
                 <Smartphone className="w-5 h-5" />
                 {t('footer.cta.download')}
               </a>
-              
+
               <p className="text-xs text-gray-500 mt-4 text-center">
                 Disponível para dispositivos Android compatíveis.
               </p>
@@ -299,7 +298,7 @@ export default function App() {
           <p>{t('footer.rights')}</p>
         </div>
       </footer>
-      
+
       {/* WhatsApp Floating Button */}
       <motion.a
         href="https://wa.me/5581996066014"
